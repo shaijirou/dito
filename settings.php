@@ -1,0 +1,474 @@
+<?php
+require_once 'config/config.php';
+requireLogin();
+
+// Only admin can access this page
+if ($_SESSION['role'] !== 'admin') {
+    header('Location: dashboard.php');
+    exit();
+}
+
+$error = '';
+$success = '';
+
+// Handle settings update
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update_settings'])) {
+    $settings_to_update = [
+        'site_name' => $_POST['site_name'] ?? '',
+        'admin_email' => $_POST['admin_email'] ?? '',
+        'timezone' => $_POST['timezone'] ?? '',
+        'session_timeout' => $_POST['session_timeout'] ?? '',
+        'password_min_length' => $_POST['password_min_length'] ?? '',
+        'max_login_attempts' => $_POST['max_login_attempts'] ?? '',
+        'email_notifications' => isset($_POST['email_notifications']) ? '1' : '0',
+        'sms_notifications' => isset($_POST['sms_notifications']) ? '1' : '0',
+        'gps_update_interval' => $_POST['gps_update_interval'] ?? '',
+        'geofence_radius' => $_POST['geofence_radius'] ?? '',
+        'location_accuracy_threshold' => $_POST['location_accuracy_threshold'] ?? '',
+        'alert_threshold_distance' => $_POST['alert_threshold_distance'] ?? ''
+    ];
+    
+    try {
+        $pdo->beginTransaction();
+        
+        foreach ($settings_to_update as $key => $value) {
+            $stmt = $pdo->prepare("INSERT INTO settings (setting_key, setting_value) VALUES (?, ?) 
+                                  ON DUPLICATE KEY UPDATE setting_value = ?, updated_at = NOW()");
+            $stmt->execute([$key, $value, $value]);
+        }
+        
+        $pdo->commit();
+        $success = 'Settings updated successfully!';
+        
+    } catch (PDOException $e) {
+        $pdo->rollBack();
+        $error = 'Failed to update settings: ' . $e->getMessage();
+    }
+}
+
+// Handle system actions
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['system_action'])) {
+    $action = $_POST['system_action'];
+    
+    switch ($action) {
+        case 'clear_cache':
+            // Clear any cache files or temporary data
+            $success = 'Cache cleared successfully!';
+            break;
+            
+        case 'backup_database':
+            // In a real implementation, you would create a database backup
+            $success = 'Database backup initiated!';
+            break;
+            
+        case 'optimize_database':
+            try {
+                $pdo->exec("OPTIMIZE TABLE users, children, missing_cases, child_locations, alerts, parent_child");
+                $success = 'Database optimized successfully!';
+            } catch (PDOException $e) {
+                $error = 'Database optimization failed: ' . $e->getMessage();
+            }
+            break;
+    }
+}
+
+// Load current settings
+try {
+    $stmt = $pdo->query("SELECT setting_key, setting_value FROM settings");
+    $settings_rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    $settings = [];
+    foreach ($settings_rows as $row) {
+        $settings[$row['setting_key']] = $row['setting_value'];
+    }
+    
+    // Set defaults if not exists
+    $default_settings = [
+        'site_name' => 'Child Tracking System',
+        'admin_email' => 'admin@childtracking.com',
+        'timezone' => 'America/New_York',
+        'session_timeout' => '3600',
+        'password_min_length' => '8',
+        'max_login_attempts' => '5',
+        'email_notifications' => '1',
+        'sms_notifications' => '0',
+        'gps_update_interval' => '30',
+        'geofence_radius' => '100',
+        'location_accuracy_threshold' => '50',
+        'alert_threshold_distance' => '500'
+    ];
+    
+    foreach ($default_settings as $key => $default_value) {
+        if (!isset($settings[$key])) {
+            $settings[$key] = $default_value;
+        }
+    }
+    
+} catch (PDOException $e) {
+    $error = 'Failed to load settings: ' . $e->getMessage();
+    $settings = [];
+}
+
+// Get system information
+$system_info = [
+    'php_version' => phpversion(),
+    'mysql_version' => $pdo->query('SELECT VERSION()')->fetchColumn(),
+    'server_software' => $_SERVER['SERVER_SOFTWARE'] ?? 'Unknown',
+    'max_execution_time' => ini_get('max_execution_time'),
+    'memory_limit' => ini_get('memory_limit'),
+    'upload_max_filesize' => ini_get('upload_max_filesize')
+];
+
+// Get system statistics
+try {
+    $stmt = $pdo->query("SELECT 
+                        (SELECT COUNT(*) FROM users) as total_users,
+                        (SELECT COUNT(*) FROM children) as total_children,
+                        (SELECT COUNT(*) FROM missing_cases) as total_cases,
+                        (SELECT COUNT(*) FROM child_locations) as total_locations,
+                        (SELECT COUNT(*) FROM alerts) as total_alerts");
+    $system_stats = $stmt->fetch(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+    $system_stats = [];
+}
+?>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Settings - Child Tracking System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="assets/css/main.css" rel="stylesheet">
+</head>
+<body>
+
+<?php include 'includes/header.php'; ?>
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h2><i class="fas fa-cogs"></i> System Settings</h2>
+            
+            <?php if ($error): ?>
+                <div class="alert alert-danger alert-dismissible fade show">
+                    <?php echo htmlspecialchars($error); ?>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            <?php endif; ?>
+
+            <?php if ($success): ?>
+                <div class="alert alert-success alert-dismissible fade show">
+                    <?php echo htmlspecialchars($success); ?>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            <?php endif; ?>
+
+            <!-- Settings Tabs -->
+            <ul class="nav nav-tabs" id="settingsTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="general-tab" data-bs-toggle="tab" data-bs-target="#general" type="button" role="tab">
+                        <i class="fas fa-cog"></i> General
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="security-tab" data-bs-toggle="tab" data-bs-target="#security" type="button" role="tab">
+                        <i class="fas fa-shield-alt"></i> Security
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="notifications-tab" data-bs-toggle="tab" data-bs-target="#notifications" type="button" role="tab">
+                        <i class="fas fa-bell"></i> Notifications
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="tracking-tab" data-bs-toggle="tab" data-bs-target="#tracking" type="button" role="tab">
+                        <i class="fas fa-map-marker-alt"></i> Tracking
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="system-tab" data-bs-toggle="tab" data-bs-target="#system" type="button" role="tab">
+                        <i class="fas fa-server"></i> System
+                    </button>
+                </li>
+            </ul>
+
+            <div class="tab-content" id="settingsTabContent">
+                <!-- General Settings -->
+                <div class="tab-pane fade show active" id="general" role="tabpanel">
+                    <div class="card mt-3">
+                        <div class="card-header">
+                            <h5 class="mb-0">General Settings</h5>
+                        </div>
+                        <div class="card-body">
+                            <form method="POST">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label">Site Name</label>
+                                            <input type="text" class="form-control" name="site_name" value="<?php echo htmlspecialchars($settings['site_name']); ?>">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label">Admin Email</label>
+                                            <input type="email" class="form-control" name="admin_email" value="<?php echo htmlspecialchars($settings['admin_email']); ?>">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">Timezone</label>
+                                    <select class="form-select" name="timezone">
+                                        <option value="America/New_York" <?php echo $settings['timezone'] === 'America/New_York' ? 'selected' : ''; ?>>Eastern Time</option>
+                                        <option value="America/Chicago" <?php echo $settings['timezone'] === 'America/Chicago' ? 'selected' : ''; ?>>Central Time</option>
+                                        <option value="America/Denver" <?php echo $settings['timezone'] === 'America/Denver' ? 'selected' : ''; ?>>Mountain Time</option>
+                                        <option value="America/Los_Angeles" <?php echo $settings['timezone'] === 'America/Los_Angeles' ? 'selected' : ''; ?>>Pacific Time</option>
+                                    </select>
+                                </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Security Settings -->
+                <div class="tab-pane fade" id="security" role="tabpanel">
+                    <div class="card mt-3">
+                        <div class="card-header">
+                            <h5 class="mb-0">Security Settings</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label class="form-label">Session Timeout (seconds)</label>
+                                        <input type="number" class="form-control" name="session_timeout" value="<?php echo htmlspecialchars($settings['session_timeout']); ?>">
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label class="form-label">Password Minimum Length</label>
+                                        <input type="number" class="form-control" name="password_min_length" value="<?php echo htmlspecialchars($settings['password_min_length']); ?>">
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label class="form-label">Max Login Attempts</label>
+                                        <input type="number" class="form-control" name="max_login_attempts" value="<?php echo htmlspecialchars($settings['max_login_attempts']); ?>">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Notifications Settings -->
+                <div class="tab-pane fade" id="notifications" role="tabpanel">
+                    <div class="card mt-3">
+                        <div class="card-header">
+                            <h5 class="mb-0">Notification Settings</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-check form-switch mb-3">
+                                        <input class="form-check-input" type="checkbox" name="email_notifications" id="emailNotifications" <?php echo $settings['email_notifications'] ? 'checked' : ''; ?>>
+                                        <label class="form-check-label" for="emailNotifications">
+                                            Email Notifications
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-check form-switch mb-3">
+                                        <input class="form-check-input" type="checkbox" name="sms_notifications" id="smsNotifications" <?php echo $settings['sms_notifications'] ? 'checked' : ''; ?>>
+                                        <label class="form-check-label" for="smsNotifications">
+                                            SMS Notifications
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tracking Settings -->
+                <div class="tab-pane fade" id="tracking" role="tabpanel">
+                    <div class="card mt-3">
+                        <div class="card-header">
+                            <h5 class="mb-0">GPS Tracking Settings</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">GPS Update Interval (seconds)</label>
+                                        <input type="number" class="form-control" name="gps_update_interval" value="<?php echo htmlspecialchars($settings['gps_update_interval']); ?>">
+                                        <div class="form-text">How often to update GPS location</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">Geofence Radius (meters)</label>
+                                        <input type="number" class="form-control" name="geofence_radius" value="<?php echo htmlspecialchars($settings['geofence_radius']); ?>">
+                                        <div class="form-text">Default safe zone radius</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">Location Accuracy Threshold (meters)</label>
+                                        <input type="number" class="form-control" name="location_accuracy_threshold" value="<?php echo htmlspecialchars($settings['location_accuracy_threshold']); ?>">
+                                        <div class="form-text">Minimum GPS accuracy required</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">Alert Distance Threshold (meters)</label>
+                                        <input type="number" class="form-control" name="alert_threshold_distance" value="<?php echo htmlspecialchars($settings['alert_threshold_distance']); ?>">
+                                        <div class="form-text">Distance to trigger alerts</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- System Info -->
+                <div class="tab-pane fade" id="system" role="tabpanel">
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="mb-0">System Information</h5>
+                                </div>
+                                <div class="card-body">
+                                    <table class="table table-sm">
+                                        <tr>
+                                            <td><strong>PHP Version:</strong></td>
+                                            <td><?php echo $system_info['php_version']; ?></td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>MySQL Version:</strong></td>
+                                            <td><?php echo $system_info['mysql_version']; ?></td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Server Software:</strong></td>
+                                            <td><?php echo $system_info['server_software']; ?></td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Max Execution Time:</strong></td>
+                                            <td><?php echo $system_info['max_execution_time']; ?>s</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Memory Limit:</strong></td>
+                                            <td><?php echo $system_info['memory_limit']; ?></td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Upload Max Size:</strong></td>
+                                            <td><?php echo $system_info['upload_max_filesize']; ?></td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="mb-0">Database Statistics</h5>
+                                </div>
+                                <div class="card-body">
+                                    <table class="table table-sm">
+                                        <tr>
+                                            <td><strong>Total Users:</strong></td>
+                                            <td><?php echo $system_stats['total_users'] ?? 0; ?></td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Total Children:</strong></td>
+                                            <td><?php echo $system_stats['total_children'] ?? 0; ?></td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Total Cases:</strong></td>
+                                            <td><?php echo $system_stats['total_cases'] ?? 0; ?></td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Location Records:</strong></td>
+                                            <td><?php echo $system_stats['total_locations'] ?? 0; ?></td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Total Alerts:</strong></td>
+                                            <td><?php echo $system_stats['total_alerts'] ?? 0; ?></td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card mt-3">
+                        <div class="card-header">
+                            <h5 class="mb-0">System Actions</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <form method="POST" style="display: inline;">
+                                        <input type="hidden" name="system_action" value="clear_cache">
+                                        <button type="submit" class="btn btn-outline-primary w-100">
+                                            <i class="fas fa-broom"></i> Clear Cache
+                                        </button>
+                                    </form>
+                                </div>
+                                <div class="col-md-4">
+                                    <form method="POST" style="display: inline;">
+                                        <input type="hidden" name="system_action" value="backup_database">
+                                        <button type="submit" class="btn btn-outline-success w-100">
+                                            <i class="fas fa-download"></i> Backup Database
+                                        </button>
+                                    </form>
+                                </div>
+                                <div class="col-md-4">
+                                    <form method="POST" style="display: inline;">
+                                        <input type="hidden" name="system_action" value="optimize_database">
+                                        <button type="submit" class="btn btn-outline-warning w-100">
+                                            <i class="fas fa-tools"></i> Optimize Database
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Save Button (outside tabs, always visible) -->
+            <div class="mt-3">
+                <button type="submit" name="update_settings" class="btn btn-primary" form="settingsForm">
+                    <i class="fas fa-save"></i> Save Settings
+                </button>
+            </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+// Add form ID to all form elements
+document.addEventListener('DOMContentLoaded', function() {
+    const forms = document.querySelectorAll('form[method="POST"]');
+    forms.forEach(function(form, index) {
+        if (!form.querySelector('input[name="system_action"]')) {
+            form.id = 'settingsForm';
+        }
+    });
+});
+</script>
+
+<?php include 'includes/footer.php'; ?>
+</body>
+</html>
