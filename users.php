@@ -103,6 +103,7 @@ $stats_stmt = $pdo->query("
     SELECT 
         COUNT(*) as total_users,
         SUM(CASE WHEN role = 'parent' THEN 1 ELSE 0 END) as total_parents,
+        SUM(CASE WHEN role = 'teacher' THEN 1 ELSE 0 END) as total_teachers,
         SUM(CASE WHEN role = 'admin' THEN 1 ELSE 0 END) as total_admins,
         SUM(CASE WHEN status = 1 THEN 1 ELSE 0 END) as active_users,
         SUM(CASE WHEN created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY) THEN 1 ELSE 0 END) as new_users_30d
@@ -150,73 +151,70 @@ $stats = $stats_stmt->fetch();
             <?php endif; ?>
 
             <!-- Statistics Cards -->
-            <div class="row mb-4">
-                <div class="col-md-2 col-sm-6 mb-3">
-                    <div class="stats-card bg-primary text-white">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <div class="stats-number"><?php echo $stats['total_users']; ?></div>
-                                <div class="stats-label">Total Users</div>
-                            </div>
-                            <div class="stats-icon">
-                                <i class="fas fa-users"></i>
-                            </div>
+            <div class="row stats-row">
+                <div class="col stats-card bg-primary">
+                    <div class="stats-content">
+                        <div>
+                            <div class="stats-number"><?php echo $stats['total_users']; ?></div>
+                            <div class="stats-label">Total Users</div>
+                        </div>
+                        <div class="stats-icon">
+                            <i class="fas fa-users"></i>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-2 col-sm-6 mb-3">
-                    <div class="stats-card bg-success text-white">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <div class="stats-number"><?php echo $stats['total_parents']; ?></div>
-                                <div class="stats-label">Parents</div>
-                            </div>
-                            <div class="stats-icon">
-                                <i class="fas fa-user-friends"></i>
-                            </div>
+
+                <div class="col stats-card bg-success">
+                    <div class="stats-content">
+                        <div>
+                            <div class="stats-number"><?php echo $stats['total_parents']; ?></div>
+                            <div class="stats-label">Parents</div>
+                        </div>
+                        <div class="stats-icon">
+                            <i class="fas fa-user-friends"></i>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-2 col-sm-6 mb-3">
-                    <div class="stats-card bg-warning text-white">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <div class="stats-number"><?php echo $stats['total_admins']; ?></div>
-                                <div class="stats-label">Admins</div>
-                            </div>
-                            <div class="stats-icon">
-                                <i class="fas fa-user-shield"></i>
-                            </div>
+                
+                <div class="col stats-card bg-secondary">
+                    <div class="stats-content">
+                        <div>
+                            <div class="stats-number"><?php echo $stats['total_teachers']; ?></div>
+                            <div class="stats-label">Total Teachers</div>
+                        </div>
+                        <div class="stats-icon">
+                            <i class="fas fa-user-plus"></i>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-3 col-sm-6 mb-3">
-                    <div class="stats-card bg-info text-white">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <div class="stats-number"><?php echo $stats['active_users']; ?></div>
-                                <div class="stats-label">Active Users</div>
-                            </div>
-                            <div class="stats-icon">
-                                <i class="fas fa-user-check"></i>
-                            </div>
+
+                <div class="col stats-card bg-warning">
+                    <div class="stats-content">
+                        <div>
+                            <div class="stats-number"><?php echo $stats['total_admins']; ?></div>
+                            <div class="stats-label">Admins</div>
+                        </div>
+                        <div class="stats-icon">
+                            <i class="fas fa-user-shield"></i>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-3 col-sm-6 mb-3">
-                    <div class="stats-card bg-secondary text-white">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <div class="stats-number"><?php echo $stats['new_users_30d']; ?></div>
-                                <div class="stats-label">New (30 days)</div>
-                            </div>
-                            <div class="stats-icon">
-                                <i class="fas fa-user-plus"></i>
-                            </div>
+
+                <div class="col stats-card bg-info">
+                    <div class="stats-content">
+                        <div>
+                            <div class="stats-number"><?php echo $stats['active_users']; ?></div>
+                            <div class="stats-label">Active Users</div>
+                        </div>
+                        <div class="stats-icon">
+                            <i class="fas fa-user-check"></i>
                         </div>
                     </div>
                 </div>
+
+                
             </div>
+
 
             <!-- Search and Filter -->
             <div class="filter-section mb-4">
@@ -267,17 +265,17 @@ $stats = $stats_stmt->fetch();
                 </div>
                 <div class="table-responsive">
                     <table class="table table-striped mb-0">
-                        <thead class="table-dark">
-                            <tr>
-                                <th>ID</th>
-                                <th>Username</th>
-                                <th>Full Name</th>
-                                <th>Email</th>
-                                <th>Phone</th>
-                                <th>Role</th>
-                                <th>Status</th>
-                                <th>Created</th>
-                                <th>Actions</th>
+                        <thead class="table-dark ">
+                            <tr >
+                                <th class="text-center text-white">ID</th>
+                                <th class="text-center text-white">Username</th>
+                                <th class="text-center text-white">Full Name</th>
+                                <th class="text-center text-white">Email</th>
+                                <th class="text-center text-white">Phone</th>
+                                <th class="text-center text-white">Role</th>
+                                <th class="text-center text-white">Status</th>
+                                <th class="text-center text-white">Created</th>
+                                <th class="text-center text-white">Actions</th>
                             </tr>
                         </thead>
                         <tbody>

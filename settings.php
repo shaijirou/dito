@@ -46,31 +46,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update_settings'])) {
     }
 }
 
-// Handle system actions
-if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['system_action'])) {
-    $action = $_POST['system_action'];
-    
-    switch ($action) {
-        case 'clear_cache':
-            // Clear any cache files or temporary data
-            $success = 'Cache cleared successfully!';
-            break;
-            
-        case 'backup_database':
-            // In a real implementation, you would create a database backup
-            $success = 'Database backup initiated!';
-            break;
-            
-        case 'optimize_database':
-            try {
-                $pdo->exec("OPTIMIZE TABLE users, children, missing_cases, child_locations, alerts, parent_child");
-                $success = 'Database optimized successfully!';
-            } catch (PDOException $e) {
-                $error = 'Database optimization failed: ' . $e->getMessage();
-            }
-            break;
-    }
-}
 
 // Load current settings
 try {
@@ -186,11 +161,6 @@ try {
                 <li class="nav-item" role="presentation">
                     <button class="nav-link" id="tracking-tab" data-bs-toggle="tab" data-bs-target="#tracking" type="button" role="tab">
                         <i class="fas fa-map-marker-alt"></i> Tracking
-                    </button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="system-tab" data-bs-toggle="tab" data-bs-target="#system" type="button" role="tab">
-                        <i class="fas fa-server"></i> System
                     </button>
                 </li>
             </ul>
@@ -336,112 +306,7 @@ try {
                     </div>
                 </div>
 
-                <!-- System Info -->
-                <div class="tab-pane fade" id="system" role="tabpanel">
-                    <div class="row mt-3">
-                        <div class="col-md-6">
-                            <div class="card">
-                                <div class="card-header">
-                                    <h5 class="mb-0">System Information</h5>
-                                </div>
-                                <div class="card-body">
-                                    <table class="table table-sm">
-                                        <tr>
-                                            <td><strong>PHP Version:</strong></td>
-                                            <td><?php echo $system_info['php_version']; ?></td>
-                                        </tr>
-                                        <tr>
-                                            <td><strong>MySQL Version:</strong></td>
-                                            <td><?php echo $system_info['mysql_version']; ?></td>
-                                        </tr>
-                                        <tr>
-                                            <td><strong>Server Software:</strong></td>
-                                            <td><?php echo $system_info['server_software']; ?></td>
-                                        </tr>
-                                        <tr>
-                                            <td><strong>Max Execution Time:</strong></td>
-                                            <td><?php echo $system_info['max_execution_time']; ?>s</td>
-                                        </tr>
-                                        <tr>
-                                            <td><strong>Memory Limit:</strong></td>
-                                            <td><?php echo $system_info['memory_limit']; ?></td>
-                                        </tr>
-                                        <tr>
-                                            <td><strong>Upload Max Size:</strong></td>
-                                            <td><?php echo $system_info['upload_max_filesize']; ?></td>
-                                        </tr>
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="col-md-6">
-                            <div class="card">
-                                <div class="card-header">
-                                    <h5 class="mb-0">Database Statistics</h5>
-                                </div>
-                                <div class="card-body">
-                                    <table class="table table-sm">
-                                        <tr>
-                                            <td><strong>Total Users:</strong></td>
-                                            <td><?php echo $system_stats['total_users'] ?? 0; ?></td>
-                                        </tr>
-                                        <tr>
-                                            <td><strong>Total Children:</strong></td>
-                                            <td><?php echo $system_stats['total_children'] ?? 0; ?></td>
-                                        </tr>
-                                        <tr>
-                                            <td><strong>Total Cases:</strong></td>
-                                            <td><?php echo $system_stats['total_cases'] ?? 0; ?></td>
-                                        </tr>
-                                        <tr>
-                                            <td><strong>Location Records:</strong></td>
-                                            <td><?php echo $system_stats['total_locations'] ?? 0; ?></td>
-                                        </tr>
-                                        <tr>
-                                            <td><strong>Total Alerts:</strong></td>
-                                            <td><?php echo $system_stats['total_alerts'] ?? 0; ?></td>
-                                        </tr>
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="card mt-3">
-                        <div class="card-header">
-                            <h5 class="mb-0">System Actions</h5>
-                        </div>
-                        <div class="card-body">
-                            <div class="row">
-                                <div class="col-md-4">
-                                    <form method="POST" style="display: inline;">
-                                        <input type="hidden" name="system_action" value="clear_cache">
-                                        <button type="submit" class="btn btn-outline-primary w-100">
-                                            <i class="fas fa-broom"></i> Clear Cache
-                                        </button>
-                                    </form>
-                                </div>
-                                <div class="col-md-4">
-                                    <form method="POST" style="display: inline;">
-                                        <input type="hidden" name="system_action" value="backup_database">
-                                        <button type="submit" class="btn btn-outline-success w-100">
-                                            <i class="fas fa-download"></i> Backup Database
-                                        </button>
-                                    </form>
-                                </div>
-                                <div class="col-md-4">
-                                    <form method="POST" style="display: inline;">
-                                        <input type="hidden" name="system_action" value="optimize_database">
-                                        <button type="submit" class="btn btn-outline-warning w-100">
-                                            <i class="fas fa-tools"></i> Optimize Database
-                                        </button>
-                                    </form>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+               
             </div>
 
             <!-- Save Button (outside tabs, always visible) -->

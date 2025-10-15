@@ -82,8 +82,8 @@ $recent_alerts = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 <div class="profile-avatar">
                     <?php if (!empty($child['photo'])): ?>
                         <img src="<?php echo htmlspecialchars($child['photo']); ?>" 
-                             alt="<?php echo htmlspecialchars($child['first_name']); ?>" 
-                             class="avatar-image">
+                            alt="<?php echo htmlspecialchars($child['first_name']); ?>" 
+                            class="avatar-image">
                     <?php else: ?>
                         <div class="avatar-placeholder">
                             <i class="fas fa-user"></i>
@@ -91,10 +91,12 @@ $recent_alerts = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     <?php endif; ?>
                     <div class="status-badge status-<?php echo $child['status']; ?>"></div>
                 </div>
+
                 <div class="profile-info">
                     <h1 class="profile-name">
                         <?php echo htmlspecialchars($child['first_name'] . ' ' . $child['last_name']); ?>
                     </h1>
+
                     <div class="profile-meta">
                         <span class="badge badge-primary">LRN: <?php echo htmlspecialchars($child['lrn'] ?? 'Not assigned'); ?></span>
                         <span class="badge badge-info">Age: <?php echo calculateAge($child['date_of_birth']); ?></span>
@@ -102,16 +104,18 @@ $recent_alerts = $stmt->fetchAll(PDO::FETCH_ASSOC);
                             <?php echo ucfirst($child['status']); ?>
                         </span>
                     </div>
-                    
+
                     <div class="profile-actions">
                         <a href="location_history.php?child_id=<?php echo $child['id']; ?>" class="btn btn-primary">
                             <i class="fas fa-map-marker-alt"></i> Location History
                         </a>
+
                         <?php if ($user_role === 'admin'): ?>
                             <a href="edit_child.php?id=<?php echo $child['id']; ?>" class="btn btn-secondary">
                                 <i class="fas fa-edit"></i> Edit Profile
                             </a>
                         <?php endif; ?>
+
                         <button onclick="refreshLocation()" class="btn btn-info">
                             <i class="fas fa-sync-alt"></i> Refresh
                         </button>
@@ -119,6 +123,7 @@ $recent_alerts = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 </div>
             </div>
         </div>
+
 
         <!-- Current Location Card -->
         <div class="col-lg-12 col-md-12">

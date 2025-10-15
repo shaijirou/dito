@@ -85,25 +85,25 @@ try {
             
             <!-- Updated statistics cards with modern gradient design -->
             <div class="dashboard-grid">
-                <div class="stat-card">
+                <div class="stat-card gradient-blue">
                     <div class="stat-number"><?php echo $stats['total_children']; ?></div>
                     <div class="stat-label">
                         <?php echo $_SESSION['role'] === 'parent' ? 'MY CHILDREN' : 'TOTAL CHILDREN'; ?>
                     </div>
                 </div>
-                
-                <div class="stat-card">
+
+                <div class="stat-card gradient-green">
                     <div class="stat-number"><?php echo $stats['active_cases']; ?></div>
                     <div class="stat-label">ACTIVE CASES</div>
                 </div>
-                
-                <div class="stat-card">
+
+                <div class="stat-card gradient-orange">
                     <div class="stat-number"><?php echo $stats['recent_alerts']; ?></div>
                     <div class="stat-label">ALERTS (24H)</div>
                 </div>
-                
+
                 <?php if ($_SESSION['role'] === 'admin'): ?>
-                <div class="stat-card">
+                <div class="stat-card gradient-purple">
                     <div class="stat-number">
                         <?php
                         $stmt = $pdo->query("SELECT COUNT(*) as total FROM users WHERE status = 'active'");
@@ -114,6 +114,7 @@ try {
                 </div>
                 <?php endif; ?>
             </div>
+
             
             <!-- Quick Actions -->
             <div class="card">

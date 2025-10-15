@@ -29,42 +29,42 @@ if ($lrn) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mobile GPS Tracker</title>
     <link rel="stylesheet" href="assets/css/main.css">
+     <link rel="stylesheet" href="assets/css/tracker.css">
 </head>
 <body>
-    <div class="tracker-container">
+     <div class="tracker-container">
         <div class="card">
-            <div class="card-header text-center">
+            <div class="card-header">
                 <h1>📱 Mobile GPS Tracker</h1>
                 <?php if ($child): ?>
                     <h2><?php echo htmlspecialchars($child['first_name'] . ' ' . $child['last_name']); ?></h2>
                     <p>Student ID: <?php echo htmlspecialchars($child['lrn']); ?></p>
                 <?php endif; ?>
             </div>
-            
+
             <?php if ($error): ?>
                 <div class="alert alert-danger"><?php echo $error; ?></div>
             <?php endif; ?>
-            
+
             <?php if (!$lrn): ?>
                 <div class="alert alert-warning">
                     <strong>Setup Required:</strong><br>
                     Add your child LRN to the URL:<br>
                     <code>mobile_tracking.php?lrn=YOUR_LRN</code>
                 </div>
-                
+
                 <div class="form-group">
                     <label for="manual_lrn" class="form-label">Enter Your Child LRN:</label>
                     <input type="text" id="manual_lrn" class="form-control" placeholder="Enter LRN">
-                    <button onclick="setDeviceId()" class="btn btn-primary mt-2">Set LRN</button>
+                    <button onclick="setDeviceId()" class="btn btn-primary big-button mt-2">Set LRN</button>
                 </div>
+
             <?php elseif ($child): ?>
-                
                 <div class="location-info">
                     <div class="d-flex align-center mb-2">
                         <span id="status-indicator" class="status-indicator status-inactive"></span>
                         <strong id="status-text">GPS Status: Inactive</strong>
                     </div>
-                    
                     <div id="location-display">
                         <p><strong>Latitude:</strong> <span id="current-lat">Not available</span></p>
                         <p><strong>Longitude:</strong> <span id="current-lng">Not available</span></p>
@@ -72,19 +72,19 @@ if ($lrn) {
                         <p><strong>Last Update:</strong> <span id="last-update">Never</span></p>
                     </div>
                 </div>
-                
+
                 <button id="start-tracking" onclick="startTracking()" class="btn btn-success big-button">
                     🎯 Start Location Tracking
                 </button>
-                
+
                 <button id="stop-tracking" onclick="stopTracking()" class="btn btn-danger big-button" style="display: none;">
                     ⏹️ Stop Tracking
                 </button>
-                
+
                 <button onclick="sendLocationOnce()" class="btn btn-primary big-button">
                     📍 Send Location Once
                 </button>
-                
+
                 <div class="mt-3">
                     <h4>Tracking Settings:</h4>
                     <div class="form-group">
@@ -96,24 +96,24 @@ if ($lrn) {
                             <option value="600">10 minutes</option>
                         </select>
                     </div>
-                    
+
                     <div class="form-group">
                         <label>
                             <input type="checkbox" id="high-accuracy" checked> High Accuracy GPS
                         </label>
                     </div>
                 </div>
-                
-                <div id="log-container" class="mt-3">
+
+                <div id="log-container">
                     <h4>Activity Log:</h4>
-                    <div id="activity-log" style="max-height: 200px; overflow-y: auto; background: #f8f9fa; padding: 10px; border-radius: 4px; font-size: 12px;">
+                    <div id="activity-log">
                         <p>Ready to start tracking...</p>
                     </div>
                 </div>
-                
             <?php endif; ?>
         </div>
     </div>
+    
 
     <script>
         let trackingInterval = null;
@@ -279,7 +279,7 @@ if ($lrn) {
             if (deviceId) {
                 window.location.href = 'mobile_tracking.php?lrn=' + encodeURIComponent(deviceId);
             } else {
-                alert('Please enter a device ID');
+                alert('Please enter the student LRN.');
             }
         }
         

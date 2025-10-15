@@ -142,27 +142,34 @@ function sendSMS($phone, $message) {
             
             <!-- Cases Statistics -->
             <div class="dashboard-grid mb-3">
-                <div class="stat-card">
+                 <!-- Active Cases -->
+                <div class="stat-card gradient-blue">
+                    <div class="stat-icon"><i class="fas fa-exclamation-circle"></i></div>
                     <div class="stat-number">
                         <?php echo count(array_filter($cases, function($case) { return $case['status'] === 'active'; })); ?>
                     </div>
                     <div class="stat-label">Active Cases</div>
                 </div>
                 
-                <div class="stat-card">
+                <!-- Resolved Cases -->
+                <div class="stat-card gradient-green">
+                    <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
                     <div class="stat-number">
                         <?php echo count(array_filter($cases, function($case) { return $case['status'] === 'resolved'; })); ?>
                     </div>
                     <div class="stat-label">Resolved Cases</div>
                 </div>
                 
-                <div class="stat-card">
+                <!-- Critical Priority -->
+                <div class="stat-card gradient-red">
+                    <div class="stat-icon"><i class="fas fa-radiation-alt"></i></div>
                     <div class="stat-number">
                         <?php echo count(array_filter($cases, function($case) { return $case['priority'] === 'critical'; })); ?>
                     </div>
                     <div class="stat-label">Critical Priority</div>
                 </div>
             </div>
+
             
             <div class="card">
                 <div class="card-header">

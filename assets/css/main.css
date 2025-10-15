@@ -781,3 +781,555 @@ footer p {
     font-size: var(--text-3xl);
   }
 }
+
+/* Modern Stats Cards */
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--space-4);
+  margin-bottom: var(--space-8);
+}
+
+.stats-card {
+  color: white;
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-md);
+  padding: var(--space-5) var(--space-6);
+  transition: transform var(--transition-normal), box-shadow var(--transition-normal);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.stats-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+}
+
+/* Backgrounds (use your system variables) */
+.bg-primary {
+  background: var(--primary-600);
+}
+
+.bg-success {
+  background: var(--success-600);
+}
+
+.bg-warning {
+  background: var(--warning-500);
+}
+
+.bg-info {
+  background: var(--info-600);
+}
+
+.bg-secondary {
+  background: var(--secondary-600);
+}
+
+/* Inner Content */
+.stats-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.stats-number {
+  font-size: var(--text-3xl);
+  font-weight: 700;
+  margin-bottom: var(--space-1);
+  line-height: 1.1;
+}
+
+.stats-label {
+  font-size: var(--text-sm);
+  font-weight: 500;
+  opacity: 0.9;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+/* Icon Styling */
+.stats-icon {
+  font-size: 2rem;
+  opacity: 0.8;
+}
+
+/* Subtle light overlay for depth */
+.stats-card::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.1), transparent);
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+/* Dashboard Grid Layout */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--space-5);
+  margin-bottom: var(--space-8);
+}
+
+/* Base Stat Card */
+.stat-card {
+  padding: var(--space-6);
+  border-radius: var(--radius-xl);
+  color: white;
+  text-align: center;
+  box-shadow: var(--shadow-md);
+  transition: transform var(--transition-normal), box-shadow var(--transition-normal);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Hover Animation */
+.stat-card:hover {
+  transform: translateY(-6px);
+  box-shadow: var(--shadow-lg);
+}
+
+/* Subtle Light Reflection */
+.stat-card::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.1), transparent);
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+/* Stat Text */
+.stat-number {
+  font-size: var(--text-4xl);
+  font-weight: 800;
+  margin-bottom: var(--space-2);
+  line-height: 1;
+}
+
+.stat-label {
+  font-size: var(--text-sm);
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  opacity: 0.9;
+  text-transform: uppercase;
+}
+
+/* Gradients for Different Cards */
+.gradient-blue {
+  background: linear-gradient(135deg, var(--primary-600), var(--secondary-500));
+}
+
+.gradient-green {
+  background: linear-gradient(135deg, var(--success-500), var(--success-700));
+}
+
+.gradient-orange {
+  background: linear-gradient(135deg, var(--warning-500), var(--warning-700));
+}
+
+.gradient-purple {
+  background: linear-gradient(135deg, var(--secondary-600), var(--secondary-800));
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-4);
+  }
+}
+
+@media (max-width: 480px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Stat Card Icon */
+.stat-icon {
+  font-size: 2rem;
+  opacity: 0.9;
+  margin-bottom: var(--space-2);
+}
+
+/* New Contextual Gradients */
+.gradient-red {
+  background: linear-gradient(135deg, var(--danger-600), var(--danger-700));
+}
+
+.gradient-blue {
+  background: linear-gradient(135deg, var(--info-500), var(--primary-700));
+}
+
+.gradient-purple {
+  background: linear-gradient(135deg, var(--secondary-500), var(--secondary-700));
+}
+
+/* Optional: Add glowing hover effect for alert feel */
+.stat-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15),
+    0 0 10px rgba(255, 255, 255, 0.1);
+}
+
+/* Child Profile Card Styling */
+.child-card {
+  border: none;
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+  transition: transform var(--transition-normal), box-shadow var(--transition-normal);
+}
+
+.child-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+}
+
+/* Profile Layout */
+.child-profile {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-6);
+  padding: var(--space-6);
+  background: white;
+}
+
+.child-photo img {
+  width: 150px;
+  height: 150px;
+  border-radius: var(--radius-xl);
+  object-fit: cover;
+  box-shadow: var(--shadow-md);
+}
+
+.no-photo {
+  width: 150px;
+  height: 150px;
+  background: var(--gray-200);
+  border-radius: var(--radius-xl);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--text-sm);
+  color: var(--gray-600);
+}
+
+/* Child Info */
+.child-info {
+  flex: 1;
+}
+
+.child-name {
+  font-size: var(--text-2xl);
+  font-weight: 700;
+  color: var(--gray-900);
+  margin-bottom: var(--space-4);
+}
+
+/* Info Grid */
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--space-4);
+}
+
+.info-item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.info-label {
+  font-weight: 600;
+  font-size: var(--text-sm);
+  color: var(--gray-600);
+}
+
+.info-value {
+  font-size: var(--text-base);
+  color: var(--gray-800);
+  font-weight: 500;
+}
+
+/* Location Card */
+.location-card {
+  border: none;
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+}
+
+.location-card .card-header {
+  background: linear-gradient(135deg, var(--primary-600), var(--secondary-600));
+  color: white;
+  padding: var(--space-4);
+}
+
+.location-card .card-title {
+  font-size: var(--text-xl);
+  font-weight: 600;
+  margin: 0;
+}
+
+.location-card .info-grid {
+  padding: var(--space-6);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .child-profile {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .info-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Profile Card Container */
+.profile-card {
+  border: none;
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+  background: white;
+  padding: var(--space-6);
+  transition: all var(--transition-normal);
+}
+
+.profile-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-xl);
+}
+
+/* Header Layout */
+.profile-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-6);
+  flex-wrap: wrap;
+}
+
+/* Avatar */
+.profile-avatar {
+  position: relative;
+  width: 130px;
+  height: 130px;
+  flex-shrink: 0;
+}
+
+.avatar-image {
+  width: 100%;
+  height: 100%;
+  border-radius: var(--radius-full);
+  object-fit: cover;
+  box-shadow: var(--shadow-md);
+}
+
+.avatar-placeholder {
+  width: 100%;
+  height: 100%;
+  border-radius: var(--radius-full);
+  background: var(--gray-200);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--gray-600);
+  font-size: 2rem;
+}
+
+/* Status Badge */
+.status-badge {
+  position: absolute;
+  bottom: 6px;
+  right: 10px;
+  width: 18px;
+  height: 18px;
+  border-radius: var(--radius-full);
+  border: 2px solid white;
+}
+
+.status-active {
+  background: var(--success-500);
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.6);
+}
+
+.status-warning {
+  background: var(--warning-500);
+  box-shadow: 0 0 8px rgba(245, 158, 11, 0.6);
+}
+
+.status-inactive {
+  background: var(--danger-500);
+  box-shadow: 0 0 8px rgba(239, 68, 68, 0.6);
+}
+
+/* Info Section */
+.profile-info {
+  flex: 1;
+  min-width: 260px;
+}
+
+.profile-name {
+  font-size: var(--text-3xl);
+  font-weight: 700;
+  color: var(--gray-900);
+  margin-bottom: var(--space-3);
+}
+
+.profile-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+}
+
+/* Buttons Row */
+.profile-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.profile-actions .btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+  transition: all var(--transition-fast);
+}
+
+.profile-actions .btn i {
+  font-size: 1rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .profile-header {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .profile-actions {
+    justify-content: center;
+  }
+}
+
+/* Map Container Styling */
+.map-container {
+  width: 100%;
+  height: 400px;
+  /* You can adjust this */
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  margin: 0;
+  box-shadow: var(--shadow-md);
+}
+
+/* Card Header Styling (for consistency) */
+.card-header {
+  background: linear-gradient(135deg, var(--primary-600), var(--secondary-600));
+  color: white;
+  padding: var(--space-4);
+  border-top-left-radius: var(--radius-xl);
+  border-top-right-radius: var(--radius-xl);
+}
+
+.card-title {
+  font-size: var(--text-xl);
+  font-weight: 600;
+  margin: 0;
+}
+
+/* Optional: Make map more responsive */
+@media (max-width: 768px) {
+  .map-container {
+    height: 300px;
+  }
+}
+
+/* Dashboard Grid Layout */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--space-5);
+}
+
+/* Stat Card Base */
+.stat-card {
+  position: relative;
+  color: white;
+  border-radius: var(--radius-xl);
+  padding: var(--space-6);
+  text-align: center;
+  box-shadow: var(--shadow-md);
+  transition: transform var(--transition-normal), box-shadow var(--transition-normal);
+  overflow: hidden;
+}
+
+/* Hover Animation */
+.stat-card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-lg);
+}
+
+/* Stat Icon */
+.stat-icon {
+  font-size: 2rem;
+  opacity: 0.85;
+  margin-bottom: var(--space-2);
+}
+
+/* Stat Number & Label */
+.stat-number {
+  font-size: var(--text-4xl);
+  font-weight: 800;
+  margin-bottom: var(--space-2);
+}
+
+.stat-label {
+  font-size: var(--text-sm);
+  font-weight: 500;
+  opacity: 0.9;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+/* Color Themes */
+.gradient-blue {
+  background: linear-gradient(135deg, var(--info-500), var(--primary-700));
+}
+
+.gradient-green {
+  background: linear-gradient(135deg, var(--success-500), var(--success-700));
+}
+
+.gradient-red {
+  background: linear-gradient(135deg, var(--danger-500), var(--danger-700));
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-4);
+  }
+}
+
+@media (max-width: 480px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+}

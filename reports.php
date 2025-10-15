@@ -371,7 +371,7 @@ try {
 
              <!-- Quick Reports  -->
             <div class="row mt-4">
-                <div class="col-md-6">
+                <div class="col-md-12">
                     <div class="card">
                         <div class="card-header">
                             <h5 class="mb-0">Recent Cases (Last 7 Days)</h5>
@@ -416,7 +416,7 @@ try {
                     </div>
                 </div>
                 
-                <div class="col-md-6">
+                <!-- <div class="col-md-6">
                     <div class="card">
                         <div class="card-header">
                             <h5 class="mb-0">System Health</h5>
@@ -444,7 +444,7 @@ try {
                             </div>
                         </div>
                     </div>
-                </div>
+                </div> -->
             </div>
         </div>
     </div>

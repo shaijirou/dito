@@ -59,6 +59,7 @@ if ($child_id) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Track Child - Child Tracking System</title>
     <link rel="stylesheet" href="assets/css/main.css">
+   
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
 </head>
@@ -80,21 +81,21 @@ if ($child_id) {
                     </div>
                 </div>
                 
-                <!-- Child Info Card -->
-                <div class="card mb-3">
+               <!-- Child Info Card -->
+                <div class="card mb-3 child-card">
                     <div class="child-profile">
-                       <div class="child-photo">
+                        <div class="child-photo">
                             <?php if ($child['photo']): ?>
                                 <img src="<?php echo htmlspecialchars($child['photo']); ?>" alt="Child Photo">
                             <?php else: ?>
-                                <div style="width: 150px; height: 150px; background: #ddd; border-radius: var(--radius-xl); display: flex; align-items: center; justify-content: center; font-size: 14px; color: #666;">
-                                    No Photo
-                                </div>
+                                <div class="no-photo">No Photo</div>
                             <?php endif; ?>
                         </div>
 
                         <div class="child-info">
-                            <h2><?php echo htmlspecialchars($child['first_name'] . ' ' . $child['last_name']); ?></h2>
+                            <h2 class="child-name">
+                                <?php echo htmlspecialchars($child['first_name'] . ' ' . $child['last_name']); ?>
+                            </h2>
                             <div class="info-grid">
                                 <div class="info-item">
                                     <span class="info-label">Student ID</span>
@@ -128,10 +129,10 @@ if ($child_id) {
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- Current Location Card -->
                 <?php if ($current_location): ?>
-                <div class="card mb-3">
+                <div class="card mb-3 location-card">
                     <div class="card-header">
                         <h2 class="card-title">Current Location</h2>
                     </div>
@@ -157,6 +158,7 @@ if ($child_id) {
                     </div>
                 </div>
                 <?php endif; ?>
+
                 
                 <!-- Map -->
                 <div class="card mb-3">
@@ -207,6 +209,8 @@ if ($child_id) {
     <?php include 'includes/footer.php'; ?>
     
     <script>
+        
+        
         let map;
         let markers = [];
         

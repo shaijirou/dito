@@ -83,27 +83,34 @@ if (isset($_POST['mark_read'])) {
             
             <!-- Alert Statistics -->
             <div class="dashboard-grid mb-3">
-                <div class="stat-card">
+                <!-- Missing Child Alerts -->
+                <div class="stat-card gradient-red">
+                    <div class="stat-icon"><i class="fas fa-exclamation-triangle"></i></div>
                     <div class="stat-number">
                         <?php echo count(array_filter($alerts, function($alert) { return $alert['alert_type'] === 'missing'; })); ?>
                     </div>
                     <div class="stat-label">Missing Child Alerts</div>
                 </div>
-                
-                <div class="stat-card">
+
+                <!-- Geofence Alerts -->
+                <div class="stat-card gradient-blue">
+                    <div class="stat-icon"><i class="fas fa-map-marker-alt"></i></div>
                     <div class="stat-number">
                         <?php echo count(array_filter($alerts, function($alert) { return $alert['alert_type'] === 'geofence_exit'; })); ?>
                     </div>
                     <div class="stat-label">Geofence Alerts</div>
                 </div>
-                
-                <div class="stat-card">
+
+                <!-- Last 24 Hours -->
+                <div class="stat-card gradient-purple">
+                    <div class="stat-icon"><i class="fas fa-clock"></i></div>
                     <div class="stat-number">
                         <?php echo count(array_filter($alerts, function($alert) { return $alert['created_at'] >= date('Y-m-d H:i:s', strtotime('-24 hours')); })); ?>
                     </div>
                     <div class="stat-label">Last 24 Hours</div>
                 </div>
             </div>
+
             
             <div class="card">
                 <div class="card-header">
