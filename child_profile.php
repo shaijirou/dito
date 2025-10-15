@@ -61,7 +61,7 @@ $recent_alerts = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Children Management - Child Tracking System</title>
+    <title>Child Profile - Child Tracking System</title>
     <link rel="stylesheet" href="assets/css/main.css">
     <!-- Added Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" 
@@ -74,61 +74,54 @@ $recent_alerts = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 <link rel="stylesheet" href="assets/css/main.css">
 
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-12">
-            <!-- Child Profile Header -->
-            <div class="card profile-header-card">
-                <div class="card-body">
-                    <div class="child-avatar">
-                            <?php if (!empty($child['photo'])): ?>
-                                <img src="<?php echo htmlspecialchars($child['photo']); ?>" 
-                                     alt="<?php echo htmlspecialchars($child['first_name']); ?>" 
-                                     class="child-photo">
-                            <?php else: ?>
-                                <div class="child-photo-placeholder">
-                                    <i class="fas fa-user"></i>
-                                </div>
-                            <?php endif; ?>
-                            <div class="status-indicator <?php echo $child['status']; ?>"></div>
+<div class="container">
+    <div class="main-content">
+        <!-- Modern profile header card -->
+        <div class="card profile-card">
+            <div class="profile-header">
+                <div class="profile-avatar">
+                    <?php if (!empty($child['photo'])): ?>
+                        <img src="<?php echo htmlspecialchars($child['photo']); ?>" 
+                             alt="<?php echo htmlspecialchars($child['first_name']); ?>" 
+                             class="avatar-image">
+                    <?php else: ?>
+                        <div class="avatar-placeholder">
+                            <i class="fas fa-user"></i>
                         </div>
-                    <div class="child-profile-header">
-                        
-                        <div class="child-details">
-                            <h1 class="child-name">
-                                <?php echo htmlspecialchars($child['first_name'] . ' ' . $child['last_name']); ?>
-                            </h1>
-                            <div class="child-meta">
-                                <span class="badge badge-primary">Learner Reference Number: <?php echo htmlspecialchars($child['lrn'] ?? 'Not assigned'); ?></span>
-                                <span class="badge badge-info">Age: <?php echo calculateAge($child['date_of_birth']); ?></span>
-                                <span class="badge badge-<?php echo $child['status'] === 'active' ? 'success' : 'warning'; ?>">
-                                    <?php echo ucfirst($child['status']); ?>
-                                </span>
-                            </div>
-                            
-                            <div class="quick-actions">
-                                <a href="location_history.php?child_id=<?php echo $child['id']; ?>" class="btn btn-primary btn-sm">
-                                    <i class="fas fa-map-marker-alt"></i> View Location History
-                                </a>
-                                <?php if ($user_role === 'admin'): ?>
-                                    <a href="edit_child.php?id=<?php echo $child['id']; ?>" class="btn btn-secondary btn-sm">
-                                        <i class="fas fa-edit"></i> Edit Profile
-                                    </a>
-                                <?php endif; ?>
-                                <button onclick="refreshLocation()" class="btn btn-info btn-sm">
-                                    <i class="fas fa-sync-alt"></i> Refresh Location
-                                </button>
-                            </div>
-                        </div>
+                    <?php endif; ?>
+                    <div class="status-badge status-<?php echo $child['status']; ?>"></div>
+                </div>
+                <div class="profile-info">
+                    <h1 class="profile-name">
+                        <?php echo htmlspecialchars($child['first_name'] . ' ' . $child['last_name']); ?>
+                    </h1>
+                    <div class="profile-meta">
+                        <span class="badge badge-primary">LRN: <?php echo htmlspecialchars($child['lrn'] ?? 'Not assigned'); ?></span>
+                        <span class="badge badge-info">Age: <?php echo calculateAge($child['date_of_birth']); ?></span>
+                        <span class="badge badge-<?php echo $child['status'] === 'active' ? 'success' : 'warning'; ?>">
+                            <?php echo ucfirst($child['status']); ?>
+                        </span>
+                    </div>
+                    
+                    <div class="profile-actions">
+                        <a href="location_history.php?child_id=<?php echo $child['id']; ?>" class="btn btn-primary">
+                            <i class="fas fa-map-marker-alt"></i> Location History
+                        </a>
+                        <?php if ($user_role === 'admin'): ?>
+                            <a href="edit_child.php?id=<?php echo $child['id']; ?>" class="btn btn-secondary">
+                                <i class="fas fa-edit"></i> Edit Profile
+                            </a>
+                        <?php endif; ?>
+                        <button onclick="refreshLocation()" class="btn btn-info">
+                            <i class="fas fa-sync-alt"></i> Refresh
+                        </button>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
 
-    <div class="row">
         <!-- Current Location Card -->
-        <div class="col-lg-8 col-md-12">
+        <div class="col-lg-12 col-md-12">
             <div class="card location-card">
                 <div class="card-header">
                     <h3><i class="fas fa-map-marker-alt"></i> Current Location</h3>
@@ -165,7 +158,7 @@ $recent_alerts = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         
                         <!-- Map Container -->
                         <div class="map-container" id="map-container">
-                            <div id="map" style="height: 300px; border-radius: 8px;"></div>
+                            <div id="map" style="height: 600px; border-radius: 8px; margin: 20px 0;"></div>
                         </div>
                         
                         <div class="location-actions">
@@ -489,7 +482,7 @@ function showAlert(message, type) {
         <button type="button" class="btn-close" onclick="this.parentElement.remove()"></button>
     `;
     
-    document.querySelector('.container-fluid').insertBefore(alertDiv, document.querySelector('.row'));
+    document.querySelector('.container').insertBefore(alertDiv, document.querySelector('.main-content'));
     
     setTimeout(() => {
         alertDiv.remove();

@@ -33,20 +33,20 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['generate_report'])) {
                                           FROM missing_cases mc
                                           JOIN children c ON mc.child_id = c.id
                                           JOIN users u ON mc.reported_by = u.id
-                                          WHERE DATE(mc.reported_at) BETWEEN ? AND ?
-                                          ORDER BY mc.reported_at DESC");
+                                          WHERE DATE(mc.created_at) BETWEEN ? AND ?
+                                          ORDER BY mc.created_at DESC");
                     $stmt->execute([$date_from, $date_to]);
                     $report_data = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     $report_title = 'Missing Cases Report';
                     break;
                     
                 case 'user_activity':
-                    $stmt = $pdo->prepare("SELECT u.id, u.username, u.full_name, u.email, u.role, u.is_active,
+                    $stmt = $pdo->prepare("SELECT u.id, u.username, u.full_name, u.email, u.role, u.status,
                                           u.created_at, u.last_login,
                                           COUNT(DISTINCT mc.id) as cases_reported,
                                           COUNT(DISTINCT pc.child_id) as children_assigned
                                           FROM users u
-                                          LEFT JOIN missing_cases mc ON u.id = mc.reported_by AND DATE(mc.reported_at) BETWEEN ? AND ?
+                                          LEFT JOIN missing_cases mc ON u.id = mc.reported_by AND DATE(mc.created_at) BETWEEN ? AND ?
                                           LEFT JOIN parent_child pc ON u.id = pc.parent_id
                                           WHERE u.created_at BETWEEN ? AND ?
                                           GROUP BY u.id
@@ -122,7 +122,7 @@ try {
     
     // Total counts
     $stmt = $pdo->query("SELECT 
-                        (SELECT COUNT(*) FROM users WHERE is_active = 1) as active_users,
+                        (SELECT COUNT(*) FROM users WHERE status = 1) as active_users,
                         (SELECT COUNT(*) FROM children WHERE status = 'active') as active_children,
                         (SELECT COUNT(*) FROM missing_cases WHERE status = 'open') as open_cases,
                         (SELECT COUNT(*) FROM alerts WHERE status = 'unread') as unread_alerts");
@@ -130,7 +130,7 @@ try {
     
     // Recent activity (last 7 days)
     $stmt = $pdo->query("SELECT 
-                        (SELECT COUNT(*) FROM missing_cases WHERE reported_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)) as recent_cases,
+                        (SELECT COUNT(*) FROM missing_cases WHERE created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)) as recent_cases,
                         (SELECT COUNT(*) FROM users WHERE created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)) as new_users,
                         (SELECT COUNT(*) FROM alerts WHERE created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)) as recent_alerts");
     $recent_stats = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -140,7 +140,7 @@ try {
     $case_stats = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
     // Users by role
-    $stmt = $pdo->query("SELECT role, COUNT(*) as count FROM users WHERE is_active = 1 GROUP BY role");
+    $stmt = $pdo->query("SELECT role, COUNT(*) as count FROM users WHERE status = 1 GROUP BY role");
     $user_stats = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
 } catch (PDOException $e) {
@@ -182,7 +182,7 @@ try {
                 </div>
             <?php endif; ?>
 
-             Statistics Dashboard 
+             <!-- Statistics Dashboard  -->
             <div class="row mb-4">
                 <div class="col-md-3 col-sm-6 mb-3">
                     <div class="stats-card bg-primary text-white">
@@ -238,7 +238,7 @@ try {
                 </div>
             </div>
 
-             Charts Row 
+             <!-- Charts Row  -->
             <div class="row mb-4">
                 <div class="col-md-6">
                     <div class="card">
@@ -262,7 +262,7 @@ try {
                 </div>
             </div>
 
-             Report Generation Form 
+             <!-- Report Generation Form  -->
             <div class="card mb-4">
                 <div class="card-header">
                     <h5 class="mb-0">Generate Report</h5>
@@ -311,7 +311,7 @@ try {
                 </div>
             </div>
 
-             Report Results 
+             <!-- Report Results  -->
             <?php if (isset($report_data) && !$error): ?>
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
@@ -344,11 +344,11 @@ try {
                                         <?php foreach ($row as $key => $value): ?>
                                             <td>
                                                 <?php 
-                                                if (in_array($key, ['created_at', 'reported_at', 'timestamp', 'last_login'])) {
+                                                if (in_array($key, ['created_at', 'created_at', 'timestamp', 'last_login'])) {
                                                     echo $value ? date('M j, Y g:i A', strtotime($value)) : 'Never';
                                                 } elseif ($key === 'photo' && $value) {
                                                     echo '<img src="' . htmlspecialchars($value) . '" alt="Photo" style="width: 30px; height: 30px; border-radius: 50%; object-fit: cover;">';
-                                                } elseif ($key === 'is_active') {
+                                                } elseif ($key === 'status') {
                                                     echo $value ? '<span class="badge bg-success">Active</span>' : '<span class="badge bg-danger">Inactive</span>';
                                                 } elseif ($key === 'status') {
                                                     $badge_class = $value === 'open' ? 'bg-warning' : ($value === 'resolved' ? 'bg-success' : 'bg-secondary');
@@ -369,7 +369,7 @@ try {
             </div>
             <?php endif; ?>
 
-             Quick Reports 
+             <!-- Quick Reports  -->
             <div class="row mt-4">
                 <div class="col-md-6">
                     <div class="card">
@@ -382,8 +382,8 @@ try {
                                 $stmt = $pdo->query("SELECT mc.*, c.first_name, c.last_name, c.lrn
                                                    FROM missing_cases mc
                                                    JOIN children c ON mc.child_id = c.id
-                                                   WHERE mc.reported_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)
-                                                   ORDER BY mc.reported_at DESC
+                                                   WHERE mc.created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)
+                                                   ORDER BY mc.created_at DESC
                                                    LIMIT 5");
                                 $recent_cases = $stmt->fetchAll(PDO::FETCH_ASSOC);
                             } catch (PDOException $e) {
@@ -402,7 +402,7 @@ try {
                                             <br>
                                             <small class="text-muted">
                                                 ID: <?php echo htmlspecialchars($case['lrn']); ?> | 
-                                                <?php echo date('M j, g:i A', strtotime($case['reported_at'])); ?>
+                                                <?php echo date('M j, g:i A', strtotime($case['created_at'])); ?>
                                             </small>
                                         </div>
                                         <span class="badge bg-<?php echo $case['status'] === 'open' ? 'warning' : 'success'; ?>">
