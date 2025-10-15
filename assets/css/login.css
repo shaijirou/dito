@@ -40,7 +40,7 @@ body {
     font-size: var(--text-3xl);
     font-weight: 700;
     background: linear-gradient(135deg, var(--primary-600), var(--secondary-600));
-    -webkit-background-clip: text;
+    /* -webkit-background-clip: text; */
     -webkit-text-fill-color: transparent;
     margin-bottom: var(--space-2);
 }
