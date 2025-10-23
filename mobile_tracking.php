@@ -175,7 +175,7 @@ if ($lrn) {
             });
         }
         
-        function startTracking() {
+       function startTracking() {
             if (!navigator.geolocation) {
                 alert('Geolocation is not supported by this browser.');
                 return;
@@ -224,26 +224,7 @@ if ($lrn) {
             
             log('✅ Tracking started with ' + (interval/1000) + 's intervals');
         }
-        
-        function stopTracking() {
-            if (trackingInterval) {
-                clearInterval(trackingInterval);
-                trackingInterval = null;
-            }
-            
-            if (watchId) {
-                navigator.geolocation.clearWatch(watchId);
-                watchId = null;
-            }
-            
-            updateStatus('inactive', 'GPS Status: Stopped');
-            
-            // Update UI
-            document.getElementById('start-tracking').style.display = 'block';
-            document.getElementById('stop-tracking').style.display = 'none';
-            
-            log('⏹️ Tracking stopped');
-        }
+
         
         function sendLocationOnce() {
             if (!navigator.geolocation) {

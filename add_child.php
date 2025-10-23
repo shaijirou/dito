@@ -17,10 +17,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $last_name = sanitizeInput($_POST['last_name']);
     $date_of_birth = sanitizeInput($_POST['date_of_birth']);
     $grade = sanitizeInput($_POST['grade']);
-   $age = sanitizeInput($_POST['age']);
-   $gender = sanitizeInput($_POST['gender']);
+    $age = sanitizeInput($_POST['age']);
+    $gender = sanitizeInput($_POST['gender']);
     $emergency_contact = sanitizeInput($_POST['emergency_contact']);
     $medical_info = sanitizeInput($_POST['medical_info']);
+    $parent_name = sanitizeInput($_POST['parent_name'] ?? '');
     
     // Handle photo upload
     $photo_path = '';
@@ -59,11 +60,22 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 if ($stmt->fetch()) {
                     $error = 'Student ID already exists.';
                 } else {
-                    // Insert new child
-                    $stmt = $pdo->prepare("INSERT INTO children (first_name, last_name, date_of_birth, grade, photo, lrn, age, gender, emergency_contact, medical_info) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+                    $stmt = $pdo->prepare("INSERT INTO children (first_name, last_name, date_of_birth, grade, photo, lrn, age, gender, emergency_contact, medical_info, parent_name) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
                     
-                    if ($stmt->execute([$first_name, $last_name, $date_of_birth, $grade, $photo_path, $lrn, $age, $gender, $emergency_contact, $medical_info])) {
+                    if ($stmt->execute([$first_name, $last_name, $date_of_birth, $grade, $photo_path, $lrn, $age, $gender, $emergency_contact, $medical_info, $parent_name])) {
+                        $child_id = $pdo->lastInsertId();
+                        
+                        require_once 'api/auto_assign_relationships.php';
+                        $assignment_result = autoAssignRelationships($child_id, $pdo);
+                        
                         $success = 'Child added successfully!';
+                        if ($assignment_result['parent_assignments'] > 0) {
+                            $success .= ' Parent automatically assigned.';
+                        }
+                        if ($assignment_result['teacher_assignments'] > 0) {
+                            $success .= ' Teacher automatically assigned.';
+                        }
+                        
                         // Clear form
                         $_POST = [];
                     } else {
@@ -161,8 +173,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
                         <div class="form-group">
                             <label for="gender" class="form-label">Gender</label>
-                            <input type="text" id="gender" name="gender" class="form-control" value="<?php echo isset($_POST['age']) ? htmlspecialchars($_POST['age']) : ''; ?>" placeholder="Age">
+                            <input type="text" id="gender" name="gender" class="form-control" value="<?php echo isset($_POST['gender']) ? htmlspecialchars($_POST['gender']) : ''; ?>" placeholder="Gender">
                         </div>
+                    </div>
+
+                    <!-- Added parent_name field for automatic parent assignment -->
+                    <div class="form-group">
+                        <label for="parent_name" class="form-label">Parent Name (for auto-assignment)</label>
+                        <input type="text" id="parent_name" name="parent_name" class="form-control" value="<?php echo isset($_POST['parent_name']) ? htmlspecialchars($_POST['parent_name']) : ''; ?>" placeholder="Enter parent's full name to auto-assign">
+                        <small>Leave blank to skip auto-assignment. Must match a parent's full name in the system.</small>
                     </div>
                     
                     <div class="form-group">

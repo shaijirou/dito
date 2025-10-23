@@ -11,7 +11,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $confirm_password = $_POST['confirm_password'];
     $full_name = sanitizeInput($_POST['full_name']);
     $phone = sanitizeInput($_POST['phone']);
-    $role = sanitizeInput($_POST['role']);
+    $role = "parent"; // Default role set to parent
     
     // Validation
     if (empty($username) || empty($email) || empty($password) || empty($full_name) || empty($phone) || empty($role)) {
@@ -95,15 +95,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     <label for="phone" class="form-label">Phone Number</label>
                     <input type="tel" id="phone" name="phone" class="form-control" value="<?php echo isset($_POST['phone']) ? htmlspecialchars($_POST['phone']) : ''; ?>" required>
                 </div>
-                
-                <div class="form-group">
+
+                <!-- <div class="form-group">
                     <label for="role" class="form-label">Role</label>
                     <select id="role" name="role" class="form-control" required>
                         <option value="">Select Role</option>
                         <option value="teacher" <?php echo (isset($_POST['role']) && $_POST['role'] === 'teacher') ? 'selected' : ''; ?>>Teacher</option>
                         <option value="parent" <?php echo (isset($_POST['role']) && $_POST['role'] === 'parent') ? 'selected' : ''; ?>>Parent</option>
                     </select>
-                </div>
+                </div> -->
                 
                 <div class="form-row">
                     <div class="form-group">

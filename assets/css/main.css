@@ -602,7 +602,7 @@ h2 {
 }
 
 /* Modal Styles */
-.modal {
+/* .modal {
   display: none;
   position: fixed;
   z-index: var(--z-modal);
@@ -613,6 +613,11 @@ h2 {
   overflow: auto;
   background-color: rgba(0, 0, 0, 0.5);
   backdrop-filter: blur(4px);
+  pointer-events: auto;
+} */
+
+.modal-dialog {
+  pointer-events: auto;
 }
 
 .modal-content {
@@ -623,6 +628,7 @@ h2 {
   max-width: 600px;
   box-shadow: var(--shadow-xl);
   animation: modalSlideIn 0.3s ease-out;
+  pointer-events: auto;
 }
 
 @keyframes modalSlideIn {
@@ -977,8 +983,7 @@ footer p {
 /* Optional: Add glowing hover effect for alert feel */
 .stat-card:hover {
   transform: translateY(-6px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15),
-    0 0 10px rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15), 0 0 10px rgba(255, 255, 255, 0.1);
 }
 
 /* Child Profile Card Styling */

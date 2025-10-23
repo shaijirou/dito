@@ -1,5 +1,6 @@
 <?php
 require_once 'config/config.php';
+
 requireLogin();
 
 
@@ -43,10 +44,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $role = $_POST['role'];
                 $full_name = $_POST['full_name'];
                 $phone = $_POST['phone'];
+                $class_name = $_POST['class_name'] ?? null;
                 
                 try {
-                    $stmt = $pdo->prepare("INSERT INTO users (username, email, password, role, full_name, phone, status) VALUES (?, ?, ?, ?, ?, ?, 1)");
-                    $stmt->execute([$username, $email, $password, $role, $full_name, $phone]);
+                    $stmt = $pdo->prepare("INSERT INTO users (username, email, password, role, full_name, phone, class_name, status) VALUES (?, ?, ?, ?, ?, ?, ?, 1)");
+                    $stmt->execute([$username, $email, $password, $role, $full_name, $phone, $class_name]);
                     $success_message = "User added successfully.";
                 } catch (PDOException $e) {
                     $error_message = "Error adding user: " . $e->getMessage();
@@ -378,6 +380,10 @@ $stats = $stats_stmt->fetch();
                             <option value="parent">Parent</option>
                             <option value="admin">Admin</option>
                         </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Class Name (for teachers)</label>
+                        <input type="text" class="form-control" name="class_name">
                     </div>
                 </div>
                 <div class="modal-footer">

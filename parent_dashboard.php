@@ -67,6 +67,8 @@ try {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Parent Dashboard - Child Tracking System</title>
+    <!-- Added parent.css stylesheet -->
+    <link rel="stylesheet" href="assets/css/parent.css">
     <link rel="stylesheet" href="assets/css/main.css">
 </head>
 <body>
@@ -74,7 +76,7 @@ try {
     
     <div class="container">
         <div class="parent-dashboard">
-             Welcome Section 
+            <!-- Welcome Section -->
             <div class="welcome-section">
                 <h1>Welcome, <?php echo htmlspecialchars($_SESSION['full_name']); ?>!</h1>
                 <p>Keep track of your children's safety and location</p>
@@ -84,7 +86,7 @@ try {
                 <div class="alert alert-danger"><?php echo $error; ?></div>
             <?php endif; ?>
             
-             Quick Statistics 
+            <!-- Quick Statistics -->
             <div class="quick-stats">
                 <div class="stat-card-parent">
                     <div class="stat-number-parent"><?php echo $total_children; ?></div>
@@ -108,7 +110,7 @@ try {
             </div>
             
             <?php if (empty($children)): ?>
-                 No Children Message 
+                <!-- No Children Message -->
                 <div class="no-children-message">
                     <h2>No Children Registered</h2>
                     <p>It looks like you don't have any children registered in the system yet.</p>
@@ -116,7 +118,7 @@ try {
                     <a href="contact.php" class="btn btn-primary">Contact School</a>
                 </div>
             <?php else: ?>
-                 Children Cards 
+                <!-- Children Cards -->
                 <div class="children-grid">
                     <?php foreach ($children as $child): ?>
                     <div class="child-card">
@@ -131,13 +133,12 @@ try {
                                 <h3><?php echo htmlspecialchars($child['first_name'] . ' ' . $child['last_name']); ?></h3>
                                 <div class="child-details">
                                     Grade <?php echo htmlspecialchars($child['grade']); ?> • 
-                                    LRN : <?php echo htmlspecialchars($child['lrn']); ?>
+                                    LRN: <?php echo htmlspecialchars($child['lrn']); ?>
                                 </div>
                             </div>
                         </div>
                         
                         <div class="child-status">
-                            
                             <div class="status-item">
                                 <div class="status-indicator <?php echo $child['active_cases'] > 0 ? 'status-danger' : 'status-safe'; ?>"></div>
                                 <span><?php echo $child['active_cases'] > 0 ? $child['active_cases'] . ' Active Case(s)' : 'No Active Cases'; ?></span>
@@ -152,7 +153,7 @@ try {
                         </div>
                         
                         <?php if ($child['last_location_update']): ?>
-                        <div style="font-size: 0.85rem; color: #666; margin-bottom: 1rem;">
+                        <div style="font-size: 0.85rem; color: #64748b; margin: 0 1.5rem; padding-bottom: 1rem;">
                             <strong>Last Location Update:</strong><br>
                             <?php echo date('M j, Y g:i A', strtotime($child['last_location_update'])); ?>
                         </div>
@@ -175,7 +176,7 @@ try {
                     <?php endforeach; ?>
                 </div>
                 
-                 Recent Alerts Section 
+                <!-- Recent Alerts Section -->
                 <?php if (!empty($recent_alerts)): ?>
                 <div class="card">
                     <div class="card-header">
@@ -206,7 +207,7 @@ try {
                 </div>
                 <?php endif; ?>
                 
-                 Recent Cases Section 
+                <!-- Recent Cases Section -->
                 <?php if (!empty($recent_cases)): ?>
                 <div class="card">
                     <div class="card-header">
@@ -250,19 +251,7 @@ try {
                 </div>
                 <?php endif; ?>
                 
-                 Quick Actions 
-                <div class="card">
-                    <div class="card-header">
-                        <h2 class="card-title">Quick Actions</h2>
-                    </div>
-                    <div class="d-flex gap-2 flex-wrap">
-                        <a href="my_children.php" class="btn btn-primary">📋 View All My Children</a>
-                        <a href="alerts.php" class="btn btn-warning">🔔 View All Alerts</a>
-                        <a href="my_cases.php" class="btn btn-danger">📁 View All Cases</a>
-                        <a href="emergency_contacts.php" class="btn btn-info">📞 Emergency Contacts</a>
-                        <a href="settings.php" class="btn btn-secondary">⚙️ Settings</a>
-                    </div>
-                </div>
+               
             <?php endif; ?>
         </div>
     </div>
@@ -279,7 +268,6 @@ try {
                     if (data.new_alerts > 0) {
                         // Show notification or update UI
                         console.log('New alerts available');
-                        // You could add a notification badge or refresh the page
                     }
                 })
                 .catch(error => console.log('Update check failed'));

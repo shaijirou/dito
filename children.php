@@ -1,15 +1,53 @@
 <?php
 require_once 'config/config.php';
+require_once 'api/auto_assign_relationships.php';
 requireLogin();
 
 // Check if user has permission to view all children
-if ($_SESSION['role'] !== 'admin' && $_SESSION['role'] !== 'teacher') {
+if ($_SESSION['role'] !== 'admin' && $_SESSION['role'] !== 'teacher' ) {
     header('Location: my_children.php');
     exit();
 }
 
 $error = '';
 $success = '';
+
+if (!isset($_SESSION['user_id']) || 
+    ($_SESSION['role'] !== 'teacher' && $_SESSION['role'] !== 'admin')) {
+    header('Location: ../index.php');
+    exit();
+}
+
+
+
+$teacher_id = $_SESSION['user_id'];
+
+
+// Step 1: Auto-assign all children before displaying
+try {
+$stmt = $pdo->prepare("SELECT id FROM children WHERE status = 'active'");
+$stmt->execute();
+$children = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+
+foreach ($children as $child) {
+autoAssignRelationships($child['id'], $pdo);
+}
+} catch (PDOException $e) {
+echo '<div class="alert alert-danger">Error during auto-assignment: ' . htmlspecialchars($e->getMessage()) . '</div>';
+}
+
+
+// Step 2: Fetch updated list of children assigned to this teacher
+$stmt = $pdo->prepare("
+SELECT c.*
+FROM children c
+INNER JOIN teacher_child tc ON c.id = tc.child_id
+WHERE tc.teacher_id = ?
+ORDER BY c.first_name, c.last_name ASC
+");
+$stmt->execute([$teacher_id]);
+$assigned_children = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 // Handle child deletion
 if (isset($_GET['delete']) && $_SESSION['role'] === 'admin') {

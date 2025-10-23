@@ -7,10 +7,18 @@ $stats = [];
 
 try {
     // Total children
-    if ($_SESSION['role'] === 'admin' || $_SESSION['role'] === 'teacher') {
+    if ($_SESSION['role'] === 'admin') {
         $stmt = $pdo->query("SELECT COUNT(*) as total FROM children WHERE status = 'active'");
         $stats['total_children'] = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
-    } else {
+    } elseif ($_SESSION['role'] === 'teacher') {
+        $stmt = $pdo->prepare("SELECT COUNT(*) as total FROM children c 
+                              JOIN teacher_child tc ON c.id = tc.child_id 
+                              WHERE tc.teacher_id = ? AND c.status = 'active'");
+        $stmt->execute([$_SESSION['user_id']]);
+        $stats['total_children'] = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
+    }
+    
+    else {
         // For parents, count only their children
         $stmt = $pdo->prepare("SELECT COUNT(*) as total FROM children c 
                               JOIN parent_child pc ON c.id = pc.child_id 

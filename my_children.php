@@ -39,6 +39,8 @@ try {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Children - Child Tracking System</title>
+    <!-- Added parent.css stylesheet -->
+    <link rel="stylesheet" href="assets/css/parent.css">
     <link rel="stylesheet" href="assets/css/main.css">
 </head>
 <body>
@@ -245,7 +247,7 @@ try {
                         </p>
                     </div>
                     <?php endif; ?>
-                    <br>
+                    
                     <!-- Action Buttons -->
                     <div class="actions-section">
                         <a href="track_child.php?id=<?php echo $child['id']; ?>" class="btn btn-success">

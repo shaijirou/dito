@@ -19,7 +19,7 @@
                         <li><a href="dashboard.php">Dashboard</a></li>
                         <li><a href="users.php">Users</a></li>
                         <li><a href="children.php">Children</a></li>
-                        <li><a href="parent_child_management.php">Parent & Teacher-Child</a></li>
+                        <!-- Removed link to parent_child_management.php - now automated -->
                         <li><a href="cases.php">Cases</a></li>  
                         <li><a href="reports.php">Reports</a></li>
                         <li><a href="settings.php">Settings</a></li>

@@ -56,6 +56,8 @@ try {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Cases - Child Tracking System</title>
+    <!-- Added parent.css stylesheet -->
+    <link rel="stylesheet" href="assets/css/parent.css">
     <link rel="stylesheet" href="assets/css/main.css">
 </head>
 <body>
@@ -75,28 +77,28 @@ try {
             <!-- Statistics -->
             <div class="stats-grid">
                 <div class="stat-card-cases">
-                    <div class="stat-number-cases" style="color: #dc3545;">
+                    <div class="stat-number-cases" style="color: #ef4444;">
                         <?php echo count(array_filter($cases, function($case) { return $case['status'] === 'active'; })); ?>
                     </div>
                     <div class="stat-label-cases">Active Cases</div>
                 </div>
                 
                 <div class="stat-card-cases">
-                    <div class="stat-number-cases" style="color: #28a745;">
+                    <div class="stat-number-cases" style="color: #10b981;">
                         <?php echo count(array_filter($cases, function($case) { return $case['status'] === 'resolved'; })); ?>
                     </div>
                     <div class="stat-label-cases">Resolved Cases</div>
                 </div>
                 
                 <div class="stat-card-cases">
-                    <div class="stat-number-cases" style="color: #ffc107;">
+                    <div class="stat-number-cases" style="color: #f59e0b;">
                         <?php echo count(array_filter($cases, function($case) { return $case['priority'] === 'critical'; })); ?>
                     </div>
                     <div class="stat-label-cases">Critical Priority</div>
                 </div>
                 
                 <div class="stat-card-cases">
-                    <div class="stat-number-cases" style="color: #17a2b8;">
+                    <div class="stat-number-cases" style="color: #06b6d4;">
                         <?php echo count($cases); ?>
                     </div>
                     <div class="stat-label-cases">Total Cases</div>
@@ -107,21 +109,19 @@ try {
             <?php if (!empty($children)): ?>
             <div class="filter-section">
                 <form method="GET" action="">
-                    <div class="d-flex gap-2 align-center">
-                        <label for="child_filter">Filter by Child:</label>
-                        <select name="child_id" id="child_filter" class="form-control" style="width: auto;">
-                            <option value="0">All Children</option>
-                            <?php foreach ($children as $child): ?>
-                                <option value="<?php echo $child['id']; ?>" <?php echo $child_filter == $child['id'] ? 'selected' : ''; ?>>
-                                    <?php echo htmlspecialchars($child['first_name'] . ' ' . $child['last_name']); ?>
-                                </option>
-                            <?php endforeach; ?>
-                        </select>
-                        <button type="submit" class="btn btn-primary">Filter</button>
-                        <?php if ($child_filter > 0): ?>
-                            <a href="my_cases.php" class="btn btn-secondary">Clear Filter</a>
-                        <?php endif; ?>
-                    </div>
+                    <label for="child_filter">Filter by Child:</label>
+                    <select name="child_id" id="child_filter" class="form-control">
+                        <option value="0">All Children</option>
+                        <?php foreach ($children as $child): ?>
+                            <option value="<?php echo $child['id']; ?>" <?php echo $child_filter == $child['id'] ? 'selected' : ''; ?>>
+                                <?php echo htmlspecialchars($child['first_name'] . ' ' . $child['last_name']); ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                    <button type="submit" class="btn btn-primary">Filter</button>
+                    <?php if ($child_filter > 0): ?>
+                        <a href="my_cases.php" class="btn btn-secondary">Clear Filter</a>
+                    <?php endif; ?>
                 </form>
             </div>
             <?php endif; ?>
@@ -171,7 +171,7 @@ try {
                             </div>
                         </div>
                         
-                        <div style="text-align: right; color: #666; font-size: 0.9rem;">
+                        <div style="text-align: right; color: #64748b; font-size: 0.9rem;">
                             <div><strong>Reported:</strong></div>
                             <div><?php echo date('M j, Y', strtotime($case['created_at'])); ?></div>
                             <div><?php echo date('g:i A', strtotime($case['created_at'])); ?></div>
@@ -193,17 +193,11 @@ try {
                             <?php echo nl2br(htmlspecialchars($case['description'])); ?>
                         </div>
                         <?php endif; ?>
-                        <?php if ($case['description']): ?>
-                        <div style="margin-bottom: 1rem;">
-                            <strong>Description:</strong><br>
-                            <?php echo nl2br(htmlspecialchars($case['description'])); ?>
-                        </div>
-                        <?php endif; ?>
                     </div>
                     
                     <!-- Case Timeline -->
-                    <div>
-                        <h4>Case Timeline</h4>
+                    <div style="padding: 1.5rem; border-bottom: 1px solid #e2e8f0;">
+                        <h4 style="margin: 0 0 1rem 0;">Case Timeline</h4>
                         <div class="case-timeline">
                             <div class="timeline-item">
                                 <div class="timeline-date"><?php echo date('M j, Y g:i A', strtotime($case['created_at'])); ?></div>
