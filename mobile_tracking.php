@@ -38,7 +38,7 @@ if ($lrn) {
                 <h1>📱 Mobile GPS Tracker</h1>
                 <?php if ($child): ?>
                     <h2><?php echo htmlspecialchars($child['first_name'] . ' ' . $child['last_name']); ?></h2>
-                    <p>Student ID: <?php echo htmlspecialchars($child['lrn']); ?></p>
+                    <p>LRN: <?php echo htmlspecialchars($child['lrn']); ?></p>
                 <?php endif; ?>
             </div>
 

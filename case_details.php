@@ -65,8 +65,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_update']) && $cas
     
     if (!empty($update_text)) {
         try {
-            $stmt = $pdo->prepare("INSERT INTO case_updates (case_id, user_id, update_text, created_at) VALUES (?, ?, ?, NOW())");
+            $stmt = $pdo->prepare("INSERT INTO case_updates (case_id, updated_by, update_text, created_at) VALUES (?, ?, ?, NOW())");
             $stmt->execute([$case['id'], $_SESSION['user_id'], $update_text]);
+
             
             header("Location: case_details.php?case=" . urlencode($case_number));
             exit();
@@ -86,6 +87,101 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_update']) && $cas
     <link rel="stylesheet" href="assets/css/main.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <style>
+
+/* Modal Overlay */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    display: none; /* Hidden by default */
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+/* Modal Container */
+.modal-content {
+    background: #fff;
+    border-radius: 10px;
+    width: 95%;
+    max-width: 600px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+    animation: slideDown 0.3s ease-in-out;
+}
+
+/* Modal Header */
+.modal-header {
+    background-color: #28a745;
+    color: #fff;
+    padding: 1rem 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header h3 {
+    margin: 0;
+    font-size: 1.25rem;
+}
+
+.modal-body {
+    padding: 1rem 1.5rem;
+}
+
+.modal-footer {
+    padding: 1rem 1.5rem;
+    text-align: right;
+    background: #f8f9fa;
+    border-top: 1px solid #dee2e6;
+}
+
+/* Close Button */
+.btn-close {
+    background: transparent;
+    border: none;
+    font-size: 1.3rem;
+    color: #fff;
+    cursor: pointer;
+}
+
+/* Button Styles */
+.modal-footer .btn {
+    margin-left: 0.5rem;
+    padding: 0.6rem 1.2rem;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.btn-success {
+    background-color: #28a745;
+    color: white;
+}
+
+.btn-secondary {
+    background-color: #6c757d;
+    color: white;
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideDown {
+    from { transform: translateY(-10px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+</style>
+
 </head>
 <body>
     <?php include 'includes/header.php'; ?>
@@ -113,7 +209,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_update']) && $cas
                     </div>
                 </div>
                 
-                 Case Status Banner 
+                 <!-- Case Status Banner  -->
                 <div class="alert alert-<?php echo $case['status'] === 'resolved' ? 'success' : ($case['priority'] === 'critical' ? 'danger' : 'warning'); ?> case-status-banner">
                     <div class="case-status-content">
                         <div>
@@ -138,9 +234,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_update']) && $cas
                 </div>
                 
                 <div class="row">
-                     Left Column 
+                     <!-- Left Column  -->
                     <div class="col-lg-8">
-                         Child Information Card 
+                         <!-- Child Information Card  -->
                         <div class="card">
                             <div class="card-header">
                                 <h2 class="card-title"><i class="fas fa-child"></i> Child Information</h2>
@@ -177,7 +273,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_update']) && $cas
                             </div>
                         </div>
                         
-                         Case Details Card 
+                         <!-- Case Details Card  -->
                         <div class="card">
                             <div class="card-header">
                                 <h2 class="card-title"><i class="fas fa-info-circle"></i> Case Details</h2>
@@ -232,7 +328,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_update']) && $cas
                             </div>
                         </div>
                         
-                         Current Location Map 
+                         <!-- Current Location Map  -->
                         <?php if (isset($current_location)): ?>
                         <div class="card">
                             <div class="card-header">
@@ -250,9 +346,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_update']) && $cas
                         <?php endif; ?>
                     </div>
                     
-                     Right Column 
+                     <!-- Right Column  -->
                     <div class="col-lg-4">
-                         Quick Actions 
+                         <!-- Quick Actions  -->
                         <div class="card">
                             <div class="card-header">
                                 <h3 class="card-title"><i class="fas fa-bolt"></i> Quick Actions</h3>
@@ -277,7 +373,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_update']) && $cas
                             </div>
                         </div>
                         
-                         Reporter Information 
+                         <!-- Reporter Information  -->
                         <div class="card">
                             <div class="card-header">
                                 <h3 class="card-title"><i class="fas fa-user-tie"></i> Reporter Information</h3>
@@ -291,7 +387,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_update']) && $cas
                             </div>
                         </div>
                         
-                         Case Timeline 
+                         <!-- Case Timeline  -->
                         <div class="card">
                             <div class="card-header">
                                 <h3 class="card-title"><i class="fas fa-history"></i> Case Timeline</h3>
@@ -348,42 +444,47 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_update']) && $cas
         </div>
     </div>
     
-     Resolve Case Modal 
+     <!-- Resolve Case Modal  -->
     <?php if (($_SESSION['role'] === 'admin' || $_SESSION['role'] === 'teacher') && $case && $case['status'] === 'active'): ?>
-    <div id="resolveModal" class="modal" style="display: none;">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>Resolve Case</h3>
-                <button type="button" class="btn-close" onclick="hideResolveModal()"></button>
+    <!-- Resolve Case Modal -->
+
+        <div id="resolveModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3><i class="fas fa-check-circle"></i> Resolve Case</h3>
+                    <button type="button" class="btn-close" onclick="hideResolveModal()">&times;</button>
+                </div>
+
+                <form method="POST" action="cases.php">
+                    <input type="hidden" name="case_id" value="<?php echo $case['id']; ?>">
+                    <input type="hidden" name="update_case" value="1">
+
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label for="status" class="form-label">Status</label>
+                            <select id="status" name="status" class="form-control" required>
+                                <option value="resolved">Resolved - Child Found Safe</option>
+                                <option value="cancelled">Cancelled - False Alarm</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group mt-3">
+                            <label for="resolution_notes" class="form-label">Resolution Notes</label>
+                            <textarea id="resolution_notes" name="resolution_notes" class="form-control" rows="4" placeholder="Describe how the case was resolved..." required></textarea>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-check"></i> Resolve Case
+                        </button>
+                        <button type="button" class="btn btn-secondary" onclick="hideResolveModal()">Cancel</button>
+                    </div>
+                </form>
             </div>
-            <form method="POST" action="cases.php">
-                <input type="hidden" name="case_id" value="<?php echo $case['id']; ?>">
-                <input type="hidden" name="update_case" value="1">
-                
-                <div class="modal-body">
-                    <div class="form-group">
-                        <label for="status" class="form-label">Status</label>
-                        <select id="status" name="status" class="form-control" required>
-                            <option value="resolved">Resolved - Child Found Safe</option>
-                            <option value="cancelled">Cancelled - False Alarm</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="resolution_notes" class="form-label">Resolution Notes</label>
-                        <textarea id="resolution_notes" name="resolution_notes" class="form-control" rows="4" placeholder="Please describe how the case was resolved, where the child was found, and any other relevant details..." required></textarea>
-                    </div>
-                </div>
-                
-                <div class="modal-footer">
-                    <button type="submit" class="btn btn-success">
-                        <i class="fas fa-check"></i> Resolve Case
-                    </button>
-                    <button type="button" class="btn btn-secondary" onclick="hideResolveModal()">Cancel</button>
-                </div>
-            </form>
         </div>
-    </div>
+
+
     <?php endif; ?>
     
     <?php include 'includes/footer.php'; ?>

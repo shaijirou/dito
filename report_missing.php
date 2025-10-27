@@ -137,129 +137,165 @@ function sendSMS($phone, $message) {
     }
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Report Missing Child - Child Tracking System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link rel="stylesheet" href="assets/css/main.css">
+   <style>
+        body {
+            background-color: #f8fafc;
+            min-height: 100vh;
+        }
+        .page-header {
+            margin-bottom: 1.5rem;
+        }
+        .page-title h1 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: #dc3545;
+        }
+        .card {
+            border-radius: 1rem;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+            border: none;
+        }
+        .card-header {
+            background-color: #fff;
+            border-bottom: 1px solid #dee2e6;
+        }
+        .form-section-title {
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 1rem;
+            border-left: 4px solid #dc3545;
+            padding-left: .5rem;
+        }
+        .alert ul {
+            margin-bottom: 0;
+        }
+        .btn-lg i {
+            margin-right: 5px;
+        }
+    </style>
 </head>
 <body>
     <?php include 'includes/header.php'; ?>
-    
-    <div class="container">
-        <div class="main-content">
-            <!-- Modern page header with better spacing -->
-            <div class="page-header">
-                <div class="page-title">
-                    <h1><i class="fas fa-exclamation-triangle"></i> Report Missing Child</h1>
-                    <p>Submit a missing child report to alert parents and staff immediately</p>
-                </div>
-                <div class="page-actions">
-                    <a href="dashboard.php" class="btn btn-secondary">
-                        <i class="fas fa-arrow-left"></i> Back to Dashboard
-                    </a>
-                </div>
+
+    <div class="container py-5">
+        <div class="d-flex justify-content-between align-items-center page-header">
+            <div class="page-title">
+                <h1><i class="fas fa-exclamation-triangle me-2"></i>Report Missing Child</h1>
+                <p class="text-muted mb-0">Submit a report to alert parents and staff immediately</p>
             </div>
-            
-            <?php if ($error): ?>
-                <div class="alert alert-danger alert-dismissible">
-                    <i class="fas fa-exclamation-circle"></i> <?php echo $error; ?>
-                    <button type="button" class="btn-close" onclick="this.parentElement.remove()"></button>
-                </div>
-            <?php endif; ?>
-            
-            <?php if ($success): ?>
-                <div class="alert alert-success alert-dismissible">
-                    <i class="fas fa-check-circle"></i> <?php echo $success; ?>
-                    <button type="button" class="btn-close" onclick="this.parentElement.remove()"></button>
-                </div>
-            <?php endif; ?>
-            
-            <!-- Modern card design with improved form layout -->
-            <div class="card">
-                <div class="card-header">
-                    <h2 class="card-title"><i class="fas fa-file-alt"></i> Missing Child Report Form</h2>
-                    <p class="card-subtitle">Please provide as much detail as possible to help locate the child quickly</p>
-                </div>
-                
-                <form method="POST" action="" class="modern-form">
-                    <div class="form-section">
-                        <h3 class="form-section-title">Child Information</h3>
-                        
-                        <div class="form-group">
-                            <label for="child_id" class="form-label required">Select Child</label>
-                            <select id="child_id" name="child_id" class="form-control" required>
-                                <option value="">Choose a child...</option>
-                                <?php foreach ($children as $child): ?>
-                                    <option value="<?php echo $child['id']; ?>" <?php echo (isset($_POST['child_id']) && $_POST['child_id'] == $child['id']) ? 'selected' : ''; ?>>
-                                        <?php echo htmlspecialchars($child['first_name'] . ' ' . $child['last_name'] . ' (' . $child['lrn'] . ') - ' . $child['grade']); ?>
-                                    </option>
-                                <?php endforeach; ?>
+            <a href="dashboard.php" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-1"></i> Back
+            </a>
+        </div>
+
+        <?php if ($error): ?>
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="fas fa-exclamation-circle me-2"></i><?php echo $error; ?>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        <?php endif; ?>
+
+        <?php if ($success): ?>
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="fas fa-check-circle me-2"></i><?php echo $success; ?>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        <?php endif; ?>
+
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-file-alt me-2"></i>Missing Child Report Form</h5>
+                <small class="text-muted">Please provide complete details to help locate the child quickly</small>
+            </div>
+
+            <div class="card-body">
+                <form method="POST" action="">
+                    <!-- Child Information -->
+                    <h6 class="form-section-title mt-3">Child Information</h6>
+                    <div class="mb-3">
+                        <label for="child_id" class="form-label">Select Child <span class="text-danger">*</span></label>
+                        <select id="child_id" name="child_id" class="form-select" required>
+                            <option value="">Choose a child...</option>
+                            <?php foreach ($children as $child): ?>
+                                <option value="<?php echo $child['id']; ?>" 
+                                    <?php echo (isset($_POST['child_id']) && $_POST['child_id'] == $child['id']) ? 'selected' : ''; ?>>
+                                    <?php echo htmlspecialchars($child['first_name'].' '.$child['last_name'].' ('.$child['lrn'].') - '.$child['grade']); ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+
+                    <!-- Report Details -->
+                    <h6 class="form-section-title mt-4">Report Details</h6>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="priority" class="form-label">Priority Level <span class="text-danger">*</span></label>
+                            <select id="priority" name="priority" class="form-select" required>
+                                <option value="">Select Priority</option>
+                                <option value="low" <?php echo (isset($_POST['priority']) && $_POST['priority'] === 'low') ? 'selected' : ''; ?>>Low - May have wandered off</option>
+                                <option value="medium" <?php echo (isset($_POST['priority']) && $_POST['priority'] === 'medium') ? 'selected' : ''; ?>>Medium - Missing for extended time</option>
+                                <option value="high" <?php echo (isset($_POST['priority']) && $_POST['priority'] === 'high') ? 'selected' : ''; ?>>High - Potential safety concern</option>
+                                <option value="critical" <?php echo (isset($_POST['priority']) && $_POST['priority'] === 'critical') ? 'selected' : ''; ?>>Critical - Immediate danger suspected</option>
                             </select>
                         </div>
-                    </div>
-                    
-                    <div class="form-section">
-                        <h3 class="form-section-title">Report Details</h3>
-                        
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="priority" class="form-label required">Priority Level</label>
-                                <select id="priority" name="priority" class="form-control" required>
-                                    <option value="">Select Priority</option>
-                                    <option value="low" <?php echo (isset($_POST['priority']) && $_POST['priority'] === 'low') ? 'selected' : ''; ?>>Low - Child may have wandered off</option>
-                                    <option value="medium" <?php echo (isset($_POST['priority']) && $_POST['priority'] === 'medium') ? 'selected' : ''; ?>>Medium - Child missing for extended time</option>
-                                    <option value="high" <?php echo (isset($_POST['priority']) && $_POST['priority'] === 'high') ? 'selected' : ''; ?>>High - Potential safety concern</option>
-                                    <option value="critical" <?php echo (isset($_POST['priority']) && $_POST['priority'] === 'critical') ? 'selected' : ''; ?>>Critical - Immediate danger suspected</option>
-                                </select>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="last_seen_time" class="form-label">Last Seen Time</label>
-                                <input type="datetime-local" id="last_seen_time" name="last_seen_time" class="form-control" value="<?php echo isset($_POST['last_seen_time']) ? htmlspecialchars($_POST['last_seen_time']) : ''; ?>">
-                            </div>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="last_seen_location" class="form-label">Last Seen Location</label>
-                            <input type="text" id="last_seen_location" name="last_seen_location" class="form-control" value="<?php echo isset($_POST['last_seen_location']) ? htmlspecialchars($_POST['last_seen_location']) : ''; ?>" placeholder="e.g., School playground, Classroom 3B, Main hallway">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="description" class="form-label required">Description of Circumstances</label>
-                            <textarea id="description" name="description" class="form-control" rows="5" required placeholder="Please describe when and how you noticed the child was missing, what they were wearing, who they were with, and any other relevant details..."><?php echo isset($_POST['description']) ? htmlspecialchars($_POST['description']) : ''; ?></textarea>
+                        <div class="col-md-6 mb-3">
+                            <label for="last_seen_time" class="form-label">Last Seen Time</label>
+                            <input type="datetime-local" id="last_seen_time" name="last_seen_time" 
+                                   class="form-control" 
+                                   value="<?php echo isset($_POST['last_seen_time']) ? htmlspecialchars($_POST['last_seen_time']) : ''; ?>">
                         </div>
                     </div>
-                    
-                    <div class="alert alert-warning">
-                        <i class="fas fa-info-circle"></i>
+
+                    <div class="mb-3">
+                        <label for="last_seen_location" class="form-label">Last Seen Location</label>
+                        <input type="text" id="last_seen_location" name="last_seen_location" 
+                               class="form-control" 
+                               placeholder="e.g., School playground, Classroom 3B, Main hallway"
+                               value="<?php echo isset($_POST['last_seen_location']) ? htmlspecialchars($_POST['last_seen_location']) : ''; ?>">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description of Circumstances <span class="text-danger">*</span></label>
+                        <textarea id="description" name="description" class="form-control" rows="5" 
+                                  required placeholder="Describe what happened, clothing, companions, etc."><?php echo isset($_POST['description']) ? htmlspecialchars($_POST['description']) : ''; ?></textarea>
+                    </div>
+
+                    <div class="alert alert-warning d-flex align-items-start">
+                        <i class="fas fa-info-circle me-2 mt-1"></i>
                         <div>
-                            <strong>Important:</strong> By submitting this report, immediate alerts will be sent to:
+                            <strong>Important:</strong> Submitting this form will notify:
                             <ul>
-                                <li>All parents/guardians of the child</li>
-                                <li>All teachers and school staff</li>
+                                <li>Parents/Guardians of the child</li>
+                                <li>All teachers and staff</li>
                                 <li>School administrators</li>
                             </ul>
-                            Please ensure all information is accurate before submitting.
+                            Double-check all information before submitting.
                         </div>
                     </div>
-                    
-                    <div class="form-actions">
-                        <button type="submit" class="btn btn-danger btn-lg">
-                            <i class="fas fa-paper-plane"></i> Submit Missing Report
-                        </button>
-                        <a href="dashboard.php" class="btn btn-secondary btn-lg">
+
+                    <div class="d-flex gap-3 justify-content-end">
+                        <a href="dashboard.php" class="btn btn-outline-secondary btn-lg">
                             <i class="fas fa-times"></i> Cancel
                         </a>
+                        <button type="submit" class="btn btn-danger btn-lg">
+                            <i class="fas fa-paper-plane"></i> Submit Report
+                        </button>
                     </div>
                 </form>
             </div>
         </div>
     </div>
-    
+
     <?php include 'includes/footer.php'; ?>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

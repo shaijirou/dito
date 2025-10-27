@@ -153,16 +153,7 @@ try {
                         <i class="fas fa-shield-alt"></i> Security
                     </button>
                 </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="notifications-tab" data-bs-toggle="tab" data-bs-target="#notifications" type="button" role="tab">
-                        <i class="fas fa-bell"></i> Notifications
-                    </button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="tracking-tab" data-bs-toggle="tab" data-bs-target="#tracking" type="button" role="tab">
-                        <i class="fas fa-map-marker-alt"></i> Tracking
-                    </button>
-                </li>
+    
             </ul>
 
             <div class="tab-content" id="settingsTabContent">
@@ -233,78 +224,6 @@ try {
                     </div>
                 </div>
 
-                <!-- Notifications Settings -->
-                <div class="tab-pane fade" id="notifications" role="tabpanel">
-                    <div class="card mt-3">
-                        <div class="card-header">
-                            <h5 class="mb-0">Notification Settings</h5>
-                        </div>
-                        <div class="card-body">
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <div class="form-check form-switch mb-3">
-                                        <input class="form-check-input" type="checkbox" name="email_notifications" id="emailNotifications" <?php echo $settings['email_notifications'] ? 'checked' : ''; ?>>
-                                        <label class="form-check-label" for="emailNotifications">
-                                            Email Notifications
-                                        </label>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="form-check form-switch mb-3">
-                                        <input class="form-check-input" type="checkbox" name="sms_notifications" id="smsNotifications" <?php echo $settings['sms_notifications'] ? 'checked' : ''; ?>>
-                                        <label class="form-check-label" for="smsNotifications">
-                                            SMS Notifications
-                                        </label>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Tracking Settings -->
-                <div class="tab-pane fade" id="tracking" role="tabpanel">
-                    <div class="card mt-3">
-                        <div class="card-header">
-                            <h5 class="mb-0">GPS Tracking Settings</h5>
-                        </div>
-                        <div class="card-body">
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label class="form-label">GPS Update Interval (seconds)</label>
-                                        <input type="number" class="form-control" name="gps_update_interval" value="<?php echo htmlspecialchars($settings['gps_update_interval']); ?>">
-                                        <div class="form-text">How often to update GPS location</div>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label class="form-label">Geofence Radius (meters)</label>
-                                        <input type="number" class="form-control" name="geofence_radius" value="<?php echo htmlspecialchars($settings['geofence_radius']); ?>">
-                                        <div class="form-text">Default safe zone radius</div>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label class="form-label">Location Accuracy Threshold (meters)</label>
-                                        <input type="number" class="form-control" name="location_accuracy_threshold" value="<?php echo htmlspecialchars($settings['location_accuracy_threshold']); ?>">
-                                        <div class="form-text">Minimum GPS accuracy required</div>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label class="form-label">Alert Distance Threshold (meters)</label>
-                                        <input type="number" class="form-control" name="alert_threshold_distance" value="<?php echo htmlspecialchars($settings['alert_threshold_distance']); ?>">
-                                        <div class="form-text">Distance to trigger alerts</div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
 
                
             </div>

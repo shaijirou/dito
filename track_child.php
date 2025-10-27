@@ -98,7 +98,7 @@ if ($child_id) {
                             </h2>
                             <div class="info-grid">
                                 <div class="info-item">
-                                    <span class="info-label">Student ID</span>
+                                    <span class="info-label">LRN</span>
                                     <span class="info-value"><?php echo htmlspecialchars($child['lrn']); ?></span>
                                 </div>
                                 <div class="info-item">

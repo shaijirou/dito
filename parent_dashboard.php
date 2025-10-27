@@ -30,17 +30,6 @@ try {
     $total_active_cases = array_sum(array_column($children, 'active_cases'));
     $total_recent_alerts = array_sum(array_column($children, 'recent_alerts'));
     
-    // Get recent alerts for parent's children
-    $stmt = $pdo->prepare("SELECT a.*, c.first_name, c.last_name, c.lrn, mc.case_number
-                          FROM alerts a 
-                          JOIN children c ON a.child_id = c.id 
-                          JOIN parent_child pc ON c.id = pc.child_id
-                          LEFT JOIN missing_cases mc ON a.case_id = mc.id
-                          WHERE pc.parent_id = ?
-                          ORDER BY a.created_at DESC 
-                          LIMIT 10");
-    $stmt->execute([$parent_id]);
-    $recent_alerts = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
     // Get recent cases for parent's children
     $stmt = $pdo->prepare("SELECT mc.*, c.first_name, c.last_name, c.lrn
@@ -176,36 +165,7 @@ try {
                     <?php endforeach; ?>
                 </div>
                 
-                <!-- Recent Alerts Section -->
-                <?php if (!empty($recent_alerts)): ?>
-                <div class="card">
-                    <div class="card-header">
-                        <h2 class="card-title">Recent Alerts</h2>
-                        <a href="alerts.php" class="btn btn-sm btn-primary">View All Alerts</a>
-                    </div>
-                    <div style="max-height: 400px; overflow-y: auto;">
-                        <?php foreach ($recent_alerts as $alert): ?>
-                        <div class="alert-item <?php echo $alert['severity']; ?>">
-                            <div class="d-flex justify-between align-center">
-                                <div>
-                                    <strong><?php echo htmlspecialchars($alert['first_name'] . ' ' . $alert['last_name']); ?></strong>
-                                    <span class="badge badge-<?php echo $alert['alert_type'] === 'missing' ? 'danger' : 'warning'; ?>">
-                                        <?php echo ucfirst(str_replace('_', ' ', $alert['alert_type'])); ?>
-                                    </span>
-                                    <br>
-                                    <small><?php echo htmlspecialchars($alert['message']); ?></small>
-                                    <br>
-                                    <small class="text-muted"><?php echo date('M j, Y g:i A', strtotime($alert['created_at'])); ?></small>
-                                </div>
-                                <div>
-                                    <a href="track_child.php?id=<?php echo $alert['child_id']; ?>" class="btn btn-sm btn-success">Track</a>
-                                </div>
-                            </div>
-                        </div>
-                        <?php endforeach; ?>
-                    </div>
-                </div>
-                <?php endif; ?>
+                
                 
                 <!-- Recent Cases Section -->
                 <?php if (!empty($recent_cases)): ?>

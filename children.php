@@ -25,6 +25,10 @@ $teacher_id = $_SESSION['user_id'];
 
 // Step 1: Auto-assign all children before displaying
 try {
+
+
+
+
 $stmt = $pdo->prepare("SELECT id FROM children WHERE status = 'active'");
 $stmt->execute();
 $children = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -64,29 +68,44 @@ if (isset($_GET['delete']) && $_SESSION['role'] === 'admin') {
 
 // Get children list
 try {
+    // Search filter
+$search = isset($_GET['search']) ? trim($_GET['search']) : '';
+$search_sql = '';
+$params = [];
+
+if (!empty($search)) {
+    $search_sql = "AND (c.first_name LIKE ? OR c.last_name LIKE ? OR c.lrn LIKE ? OR c.grade LIKE ?)";
+    $like = "%{$search}%";
+    $params = [$like, $like, $like, $like];
+}
+
+    
     if ($_SESSION['role'] === 'admin') {
-        $stmt = $pdo->query("SELECT c.*, 
-                            (SELECT COUNT(*) FROM parent_child pc WHERE pc.child_id = c.id) as parent_count,
-                            (SELECT COUNT(*) FROM missing_cases mc WHERE mc.child_id = c.id AND mc.status = 'active') as active_cases
-                            FROM children c 
-                            WHERE c.status = 'active' 
-                            ORDER BY c.first_name, c.last_name");
+        $sql = "SELECT c.*, 
+                    (SELECT COUNT(*) FROM parent_child pc WHERE pc.child_id = c.id) as parent_count,
+                    (SELECT COUNT(*) FROM missing_cases mc WHERE mc.child_id = c.id AND mc.status = 'active') as active_cases
+                FROM children c 
+                WHERE c.status = 'active' $search_sql
+                ORDER BY c.first_name, c.last_name";
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute($params);
     } else {
-        // Teachers see children assigned to them
-        $stmt = $pdo->prepare("SELECT c.*, tc.class_name,
-                              (SELECT COUNT(*) FROM parent_child pc WHERE pc.child_id = c.id) as parent_count,
-                              (SELECT COUNT(*) FROM missing_cases mc WHERE mc.child_id = c.id AND mc.status = 'active') as active_cases
-                              FROM children c 
-                              JOIN teacher_child tc ON c.id = tc.child_id 
-                              WHERE tc.teacher_id = ? AND c.status = 'active' 
-                              ORDER BY c.first_name, c.last_name");
-        $stmt->execute([$_SESSION['user_id']]);
+        $sql = "SELECT c.*, tc.class_name,
+                    (SELECT COUNT(*) FROM parent_child pc WHERE pc.child_id = c.id) as parent_count,
+                    (SELECT COUNT(*) FROM missing_cases mc WHERE mc.child_id = c.id AND mc.status = 'active') as active_cases
+                FROM children c 
+                JOIN teacher_child tc ON c.id = tc.child_id 
+                WHERE tc.teacher_id = ? AND c.status = 'active' $search_sql
+                ORDER BY c.first_name, c.last_name";
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute(array_merge([$_SESSION['user_id']], $params));
     }
     $children = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
     $error = 'Failed to load children data.';
     $children = [];
 }
+
 ?>
 
 <!DOCTYPE html>
@@ -118,9 +137,18 @@ try {
             <?php endif; ?>
             
             <div class="card">
-                <div class="card-header">
-                    <h2 class="card-title">Registered Children (<?php echo count($children); ?>)</h2>
+                <div class="card-header d-flex justify-between align-center">
+                    <h2 class="card-title">Registered Children</h2>
+                    <form method="get" class="d-flex" style="gap:8px;">
+                        <input type="text" name="search" class="form-control" placeholder="Search by name, grade, or LRN"
+                            value="<?php echo htmlspecialchars($search); ?>" style="max-width:250px;">
+                        <button type="submit" class="btn btn-primary">Search</button>
+                        <?php if (!empty($search)): ?>
+                            <a href="children.php" class="btn btn-secondary">Clear</a>
+                        <?php endif; ?>
+                    </form>
                 </div>
+
                 
                 <?php if (empty($children)): ?>
                     <div class="text-center p-3">
@@ -134,7 +162,7 @@ try {
                         <thead>
                             <tr>
                                 <th>Photo</th>
-                                <th>Student ID</th>
+                                <th>LRN</th>
                                 <th>Name</th>
                                 <th>Grade</th>
                                 <th>Age</th>
@@ -202,7 +230,25 @@ try {
             </div>
         </div>
     </div>
-    
+    <script>
+        document.getElementById('childSearch').addEventListener('keyup', function() {
+            const query = this.value.toLowerCase();
+            const rows = document.querySelectorAll('table tbody tr');
+
+            rows.forEach(row => {
+                const name = row.querySelector('td:nth-child(3)').textContent.toLowerCase();
+                const grade = row.querySelector('td:nth-child(4)').textContent.toLowerCase();
+                const lrn = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
+
+                if (name.includes(query) || grade.includes(query) || lrn.includes(query)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        });
+    </script>
+
     <?php include 'includes/footer.php'; ?>
 </body>
 </html>
