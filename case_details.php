@@ -16,7 +16,7 @@ if ($case_number) {
     try {
         // Get case details
         $stmt = $pdo->prepare("SELECT mc.*, 
-                              c.first_name, c.last_name, c.lrn, c.photo, c.grade, c.date_of_birth,
+                              c.first_name, c.last_name, c.lrn, c.grade, c.date_of_birth,
                               u1.full_name as reported_by_name, u1.email as reporter_email, u1.phone as reporter_phone,
                               u2.full_name as resolved_by_name
                               FROM missing_cases mc 
@@ -243,15 +243,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_update']) && $cas
                             </div>
                             <div class="card-body">
                                 <div class="child-profile-compact">
-                                    <div class="child-photo-compact">
-                                        <?php if ($case['photo']): ?>
-                                            <img src="<?php echo htmlspecialchars($case['photo']); ?>" alt="Child Photo">
-                                        <?php else: ?>
-                                            <div class="photo-placeholder">
-                                                <i class="fas fa-user"></i>
-                                            </div>
-                                        <?php endif; ?>
-                                    </div>
+                                   
                                     <div class="child-info-compact">
                                         <h3><?php echo htmlspecialchars($case['first_name'] . ' ' . $case['last_name']); ?></h3>
                                         <div class="info-grid">

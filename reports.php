@@ -11,111 +11,6 @@ if ($_SESSION['role'] !== 'admin') {
 $error = '';
 $success = '';
 
-// Handle report generation
-if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['generate_report'])) {
-    $report_type = $_POST['report_type'];
-    $date_from = $_POST['date_from'];
-    $date_to = $_POST['date_to'];
-    $export_format = $_POST['export_format'] ?? 'view';
-    
-    // Validate dates
-    if (empty($date_from) || empty($date_to)) {
-        $error = 'Please select both start and end dates.';
-    } elseif (strtotime($date_from) > strtotime($date_to)) {
-        $error = 'Start date cannot be later than end date.';
-    } else {
-        // Generate report based on type
-        try {
-            switch ($report_type) {
-                case 'missing_cases':
-                    $stmt = $pdo->prepare("SELECT mc.*, c.first_name, c.last_name, c.lrn, c.grade, c.photo,
-                                          u.full_name as reported_by_name, u.role as reporter_role
-                                          FROM missing_cases mc
-                                          JOIN children c ON mc.child_id = c.id
-                                          JOIN users u ON mc.reported_by = u.id
-                                          WHERE DATE(mc.created_at) BETWEEN ? AND ?
-                                          ORDER BY mc.created_at DESC");
-                    $stmt->execute([$date_from, $date_to]);
-                    $report_data = $stmt->fetchAll(PDO::FETCH_ASSOC);
-                    $report_title = 'Missing Cases Report';
-                    break;
-                    
-                case 'user_activity':
-                    $stmt = $pdo->prepare("SELECT u.id, u.username, u.full_name, u.email, u.role, u.status,
-                                          u.created_at, u.last_login,
-                                          COUNT(DISTINCT mc.id) as cases_reported,
-                                          COUNT(DISTINCT pc.child_id) as children_assigned
-                                          FROM users u
-                                          LEFT JOIN missing_cases mc ON u.id = mc.reported_by AND DATE(mc.created_at) BETWEEN ? AND ?
-                                          LEFT JOIN parent_child pc ON u.id = pc.parent_id
-                                          WHERE u.created_at BETWEEN ? AND ?
-                                          GROUP BY u.id
-                                          ORDER BY u.created_at DESC");
-                    $stmt->execute([$date_from, $date_to, $date_from, $date_to]);
-                    $report_data = $stmt->fetchAll(PDO::FETCH_ASSOC);
-                    $report_title = 'User Activity Report';
-                    break;
-                    
-                case 'location_tracking':
-                    $stmt = $pdo->prepare("SELECT cl.*, c.first_name, c.last_name, c.lrn,
-                                          u.full_name as parent_name
-                                          FROM child_locations cl
-                                          JOIN children c ON cl.child_id = c.id
-                                          LEFT JOIN parent_child pc ON c.id = pc.child_id
-                                          LEFT JOIN users u ON pc.parent_id = u.id
-                                          WHERE DATE(cl.timestamp) BETWEEN ? AND ?
-                                          ORDER BY cl.timestamp DESC
-                                          LIMIT 1000");
-                    $stmt->execute([$date_from, $date_to]);
-                    $report_data = $stmt->fetchAll(PDO::FETCH_ASSOC);
-                    $report_title = 'Location Tracking Report';
-                    break;
-                    
-                case 'alerts':
-                    $stmt = $pdo->prepare("SELECT a.*, c.first_name, c.last_name, c.lrn,
-                                          u.full_name as user_name, u.role as user_role
-                                          FROM alerts a
-                                          JOIN children c ON a.child_id = c.id
-                                          LEFT JOIN users u ON a.user_id = u.id
-                                          WHERE DATE(a.created_at) BETWEEN ? AND ?
-                                          ORDER BY a.created_at DESC");
-                    $stmt->execute([$date_from, $date_to]);
-                    $report_data = $stmt->fetchAll(PDO::FETCH_ASSOC);
-                    $report_title = 'Alerts Report';
-                    break;
-                    
-                default:
-                    $error = 'Invalid report type selected.';
-                    break;
-            }
-            
-            // Handle export
-            if (!$error && $export_format === 'csv') {
-                header('Content-Type: text/csv');
-                header('Content-Disposition: attachment; filename="' . strtolower(str_replace(' ', '_', $report_title)) . '_' . date('Y-m-d') . '.csv"');
-                
-                $output = fopen('php://output', 'w');
-                
-                if (!empty($report_data)) {
-                    // Write headers
-                    fputcsv($output, array_keys($report_data[0]));
-                    
-                    // Write data
-                    foreach ($report_data as $row) {
-                        fputcsv($output, $row);
-                    }
-                }
-                
-                fclose($output);
-                exit();
-            }
-            
-        } catch (PDOException $e) {
-            $error = 'Database error: ' . $e->getMessage();
-        }
-    }
-}
-
 // Get system statistics
 try {
     $stats = [];
@@ -166,7 +61,7 @@ try {
 <div class="container mt-4">
     <div class="row">
         <div class="col-12">
-            <h2><i class="fas fa-chart-bar"></i> System Reports</h2>
+            <h1><i class="fas fa-chart-bar"></i> System Reports</h1>
             
             <?php if ($error): ?>
                 <div class="alert alert-danger alert-dismissible fade show">
@@ -262,54 +157,7 @@ try {
                 </div>
             </div>
 
-             <!-- Report Generation Form  -->
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h5 class="mb-0">Generate Report</h5>
-                </div>
-                <div class="card-body">
-                    <form method="POST">
-                        <div class="row">
-                            <div class="col-md-3">
-                                <div class="mb-3">
-                                    <label class="form-label">Report Type *</label>
-                                    <select class="form-select" name="report_type" required>
-                                        <option value="">Select report type...</option>
-                                        <option value="missing_cases">Missing Cases</option>
-                                        <option value="user_activity">User Activity</option>
-                                        <option value="location_tracking">Location Tracking</option>
-                                        <option value="alerts">Alerts</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <div class="mb-3">
-                                    <label class="form-label">From Date *</label>
-                                    <input type="date" class="form-control" name="date_from" required value="<?php echo date('Y-m-d', strtotime('-30 days')); ?>">
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <div class="mb-3">
-                                    <label class="form-label">To Date *</label>
-                                    <input type="date" class="form-control" name="date_to" required value="<?php echo date('Y-m-d'); ?>">
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <div class="mb-3">
-                                    <label class="form-label">Export Format</label>
-                                    <select class="form-select" name="export_format">
-                                        <option value="view">View in Browser</option>
-                                        <option value="csv">Download CSV</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-                        <button type="submit" name="generate_report" class="btn btn-primary">
-                            <i class="fas fa-chart-line"></i> Generate Report
-                        </button>
-                    </form>
-                </div>
-            </div>
+             
 
              <!-- Report Results  -->
             <?php if (isset($report_data) && !$error): ?>
@@ -346,9 +194,7 @@ try {
                                                 <?php 
                                                 if (in_array($key, ['created_at', 'created_at', 'timestamp', 'last_login'])) {
                                                     echo $value ? date('M j, Y g:i A', strtotime($value)) : 'Never';
-                                                } elseif ($key === 'photo' && $value) {
-                                                    echo '<img src="' . htmlspecialchars($value) . '" alt="Photo" style="width: 30px; height: 30px; border-radius: 50%; object-fit: cover;">';
-                                                } elseif ($key === 'status') {
+                                                }elseif ($key === 'status') {
                                                     echo $value ? '<span class="badge bg-success">Active</span>' : '<span class="badge bg-danger">Inactive</span>';
                                                 } elseif ($key === 'status') {
                                                     $badge_class = $value === 'open' ? 'bg-warning' : ($value === 'resolved' ? 'bg-success' : 'bg-secondary');

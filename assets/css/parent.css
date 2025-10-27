@@ -236,6 +236,46 @@
     margin-bottom: 1rem;
 }
 
+/* Enhanced table responsiveness in parent dashboard */
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+    min-width: 500px;
+}
+
+.table thead {
+    background: #f8fafc;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.table th {
+    padding: 1rem 0.75rem;
+    text-align: left;
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: #1e293b;
+    border-bottom: 2px solid #e2e8f0;
+    white-space: nowrap;
+}
+
+.table td {
+    padding: 0.75rem;
+    border-bottom: 1px solid #e2e8f0;
+    font-size: 0.85rem;
+    word-break: break-word;
+}
+
+.table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin: 0 -1.5rem;
+    padding: 0 1.5rem;
+    border-radius: 8px;
+}
+
 /* ============================================
    MY CHILDREN PAGE
    ============================================ */
@@ -698,8 +738,40 @@
 }
 
 /* ============================================
-   RESPONSIVE DESIGN
+   RESPONSIVE DESIGN - ENHANCED
    ============================================ */
+
+@media (max-width: 1024px) {
+    .welcome-section {
+        padding: 2rem;
+    }
+
+    .quick-stats,
+    .children-grid,
+    .stats-grid {
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        gap: 1.25rem;
+    }
+
+    .child-details-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .table {
+        font-size: 0.85rem;
+        min-width: auto;
+    }
+
+    .table th,
+    .table td {
+        padding: 0.75rem 0.5rem;
+    }
+
+    .table-responsive {
+        margin: 0 -1rem;
+        padding: 0 1rem;
+    }
+}
 
 @media (max-width: 768px) {
     .welcome-section {
@@ -710,17 +782,74 @@
         font-size: 1.5rem;
     }
 
+    .welcome-section p {
+        font-size: 1rem;
+    }
+
     .quick-stats,
     .children-grid,
     .stats-grid {
-        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
         gap: 1rem;
+    }
+
+    .stat-card-parent,
+    .stat-card-cases {
+        padding: 1.25rem;
+    }
+
+    .stat-number-parent,
+    .stat-number-cases {
+        font-size: 2rem;
+    }
+
+    .stat-label-parent,
+    .stat-label-cases {
+        font-size: 0.85rem;
+    }
+
+    .child-header {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 1rem;
+    }
+
+    .child-photo,
+    .child-photo-placeholder {
+        width: 80px;
+        height: 80px;
+    }
+
+    .child-info h3 {
+        font-size: 1rem;
+    }
+
+    .child-details {
+        font-size: 0.8rem;
     }
 
     .child-header-detailed {
         flex-direction: column;
         align-items: center;
         text-align: center;
+        gap: 1.5rem;
+        padding: 1.5rem;
+    }
+
+    .child-photo-large,
+    .child-photo-placeholder-large {
+        width: 100px;
+        height: 100px;
+    }
+
+    .child-main-info h2 {
+        font-size: 1.25rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .child-basic-details {
+        font-size: 0.9rem;
     }
 
     .child-details-grid {
@@ -729,45 +858,302 @@
         padding: 1rem;
     }
 
+    .detail-section h3 {
+        font-size: 1rem;
+    }
+
+    .detail-item {
+        padding: 0.5rem 0;
+    }
+
+    .detail-label,
+    .detail-value {
+        font-size: 0.85rem;
+    }
+
+    .status-section {
+        flex-direction: column;
+        padding: 1rem 1.5rem;
+        gap: 0.75rem;
+    }
+
+    .status-badge-large {
+        width: 100%;
+        justify-content: center;
+        padding: 0.6rem 1rem;
+    }
+
     .case-main-info {
         flex-direction: column;
         gap: 1rem;
     }
 
-    .case-actions .btn {
-        min-width: 100%;
+    .case-child-photo,
+    .case-child-photo-placeholder {
+        width: 70px;
+        height: 70px;
     }
 
+    .case-child-info h3 {
+        font-size: 1rem;
+    }
+
+    .case-details,
+    .case-timeline,
+    .case-actions {
+        padding: 1rem 1.5rem;
+    }
+
+    .case-details h4,
+    .case-timeline h4 {
+        font-size: 1rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .timeline-date {
+        min-width: 120px;
+        font-size: 0.85rem;
+    }
+
+    .timeline-content {
+        font-size: 0.85rem;
+    }
+
+    .case-actions .btn,
     .actions-section .btn {
         min-width: 100%;
+        flex: 1;
+    }
+
+    .filter-section {
+        padding: 1rem;
     }
 
     .filter-section form {
         flex-direction: column;
+        gap: 0.75rem;
     }
 
     .filter-section .form-control {
         width: 100%;
+        padding: 0.5rem 0.75rem;
+        font-size: 0.9rem;
+    }
+
+    .no-children-message,
+    .no-children-state,
+    .no-cases-message {
+        padding: 2rem 1.5rem;
+    }
+
+    .no-children-message h2,
+    .no-children-state h2,
+    .no-cases-message h2 {
+        font-size: 1.25rem;
+    }
+
+    .parent-dashboard,
+    .children-container,
+    .cases-container {
+        padding: 1.5rem 0;
+    }
+
+    .table {
+        font-size: 0.8rem;
+        min-width: 100%;
+    }
+
+    .table th,
+    .table td {
+        padding: 0.5rem 0.5rem;
+        font-size: 0.8rem;
+    }
+
+    .table-responsive {
+        margin: 0 -1rem;
+        padding: 0 1rem;
     }
 }
 
 @media (max-width: 576px) {
+    .welcome-section {
+        padding: 1.25rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .welcome-section h1 {
+        font-size: 1.25rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .welcome-section p {
+        font-size: 0.95rem;
+    }
+
+    .quick-stats,
+    .children-grid,
+    .stats-grid {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+
+    .stat-card-parent,
+    .stat-card-cases {
+        padding: 1rem;
+        border-top: 3px solid;
+    }
 
     .stat-number-parent,
     .stat-number-cases {
-        font-size: 2rem;
+        font-size: 1.75rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .stat-label-parent,
+    .stat-label-cases {
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    .child-card {
+        margin-bottom: 1rem;
     }
 
     .child-header {
-        flex-direction: column;
-        align-items: center;
-        text-align: center;
+        padding: 1rem;
+        gap: 0.75rem;
     }
 
     .child-photo,
     .child-photo-placeholder {
-        width: 60px;
-        height: 60px;
+        width: 70px;
+        height: 70px;
+    }
+
+    .child-info h3 {
+        font-size: 0.95rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .child-details {
+        font-size: 0.75rem;
+    }
+
+    .child-status {
+        padding: 0.75rem 1rem;
+        gap: 0.5rem;
+    }
+
+    .status-item {
+        font-size: 0.8rem;
+        gap: 0.5rem;
+    }
+
+    .child-actions {
+        padding: 0.75rem 1rem;
+        gap: 0.5rem;
+    }
+
+    .child-actions .btn {
+        font-size: 0.8rem;
+        padding: 0.5rem 0.75rem;
+    }
+
+    .child-detailed-card {
+        margin-bottom: 1.5rem;
+    }
+
+    .child-header-detailed {
+        padding: 1rem;
+        gap: 1rem;
+    }
+
+    .child-photo-large,
+    .child-photo-placeholder-large {
+        width: 90px;
+        height: 90px;
+    }
+
+    .child-main-info h2 {
+        font-size: 1.1rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .child-basic-details {
+        font-size: 0.8rem;
+        line-height: 1.5;
+    }
+
+    .status-section {
+        padding: 1rem;
+        gap: 0.5rem;
+    }
+
+    .status-badge-large {
+        padding: 0.5rem 1rem;
+        font-size: 0.8rem;
+    }
+
+    .child-details-grid {
+        padding: 1rem;
+        gap: 0.75rem;
+    }
+
+    .detail-section h3 {
+        font-size: 0.95rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .detail-item {
+        padding: 0.5rem 0;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+
+    .detail-label {
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    .detail-value {
+        font-size: 0.8rem;
+    }
+
+    .location-preview {
+        padding: 1rem;
+    }
+
+    .location-preview h4 {
+        font-size: 0.95rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .location-preview p {
+        font-size: 0.8rem;
+    }
+
+    .actions-section {
+        padding: 1rem;
+        gap: 0.5rem;
+    }
+
+    .actions-section .btn {
+        min-width: 100%;
+        font-size: 0.8rem;
+        padding: 0.6rem 0.75rem;
+    }
+
+    .case-card {
+        margin-bottom: 1rem;
+    }
+
+    .case-header {
+        padding: 1rem;
+    }
+
+    .case-main-info {
+        gap: 0.75rem;
+        margin-bottom: 0.75rem;
     }
 
     .case-child-photo,
@@ -776,12 +1162,194 @@
         height: 60px;
     }
 
-    .status-section {
-        flex-direction: column;
+    .case-child-info h3 {
+        font-size: 0.95rem;
+        margin-bottom: 0.25rem;
     }
 
-    .status-badge-large {
-        width: 100%;
-        justify-content: center;
+    .case-child-info small {
+        font-size: 0.75rem;
+    }
+
+    .case-badges {
+        gap: 0.5rem;
+    }
+
+    .case-details {
+        padding: 1rem;
+    }
+
+    .case-details h4 {
+        font-size: 0.95rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .case-details strong,
+    .case-details div {
+        font-size: 0.8rem;
+    }
+
+    .case-timeline {
+        padding: 1rem;
+    }
+
+    .case-timeline h4 {
+        font-size: 0.95rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .timeline-item {
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+        padding-left: 1.25rem;
+    }
+
+    .timeline-date {
+        font-size: 0.75rem;
+        min-width: 100px;
+    }
+
+    .timeline-content {
+        font-size: 0.8rem;
+    }
+
+    .case-actions {
+        padding: 1rem;
+        gap: 0.5rem;
+    }
+
+    .case-actions .btn {
+        min-width: 100%;
+        font-size: 0.8rem;
+        padding: 0.6rem 0.75rem;
+    }
+
+    .filter-section {
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .filter-section form {
+        gap: 0.5rem;
+    }
+
+    .filter-section label {
+        font-size: 0.85rem;
+    }
+
+    .filter-section .form-control {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.9rem;
+    }
+
+    .no-children-message,
+    .no-children-state,
+    .no-cases-message {
+        padding: 1.5rem 1rem;
+    }
+
+    .no-children-message h2,
+    .no-children-state h2,
+    .no-cases-message h2 {
+        font-size: 1.1rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .no-children-message p,
+    .no-children-state p,
+    .no-cases-message p {
+        font-size: 0.85rem;
+    }
+
+    .parent-dashboard,
+    .children-container,
+    .cases-container {
+        padding: 1rem 0;
+    }
+
+    .table {
+        font-size: 0.75rem;
+        min-width: 100%;
+    }
+
+    .table th,
+    .table td {
+        padding: 0.4rem 0.3rem;
+        font-size: 0.75rem;
+    }
+
+    .table-responsive {
+        margin: 0 -0.75rem;
+        padding: 0 0.75rem;
+    }
+}
+
+@media (max-width: 360px) {
+    .welcome-section {
+        padding: 1rem;
+    }
+
+    .welcome-section h1 {
+        font-size: 1.1rem;
+    }
+
+    .welcome-section p {
+        font-size: 0.9rem;
+    }
+
+    .quick-stats,
+    .children-grid,
+    .stats-grid {
+        gap: 0.5rem;
+    }
+
+    .stat-card-parent,
+    .stat-card-cases {
+        padding: 0.75rem;
+    }
+
+    .stat-number-parent,
+    .stat-number-cases {
+        font-size: 1.5rem;
+    }
+
+    .stat-label-parent,
+    .stat-label-cases {
+        font-size: 0.7rem;
+    }
+
+    .child-photo,
+    .child-photo-placeholder,
+    .case-child-photo,
+    .case-child-photo-placeholder {
+        width: 60px;
+        height: 60px;
+    }
+
+    .child-info h3,
+    .case-child-info h3 {
+        font-size: 0.9rem;
+    }
+
+    .actions-section .btn,
+    .case-actions .btn {
+        font-size: 0.75rem;
+        padding: 0.5rem 0.5rem;
+    }
+
+    .table {
+        font-size: 0.7rem;
+        min-width: 100%;
+    }
+
+    .table th,
+    .table td {
+        padding: 0.3rem 0.2rem;
+        font-size: 0.7rem;
+    }
+
+    .table-responsive {
+        margin: 0 -0.5rem;
+        padding: 0 0.5rem;
     }
 }

@@ -80,6 +80,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             </form>
             
             <div class="text-center mt-3">
+                <p>Track your Child? <a href="mobile_tracking.php">Track here</a></p>
                 <p>Don't have an account? <a href="register.php">Register here</a></p>
             </div>
         </div>

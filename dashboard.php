@@ -105,13 +105,13 @@ try {
                     <div class="stat-label">ACTIVE CASES</div>
                 </div>
 
-                <div class="stat-card gradient-orange">
+                <div class="stat-card --danger-900 gradient-red ">
                     <div class="stat-number"><?php echo $stats['recent_alerts']; ?></div>
                     <div class="stat-label">ALERTS (24H)</div>
                 </div>
 
                 <?php if ($_SESSION['role'] === 'admin'): ?>
-                <div class="stat-card gradient-purple">
+                <div class="stat-card gradient-green">
                     <div class="stat-number">
                         <?php
                         $stmt = $pdo->query("SELECT COUNT(*) as total FROM users WHERE status = 'active'");
@@ -185,7 +185,7 @@ try {
                                 </td>
                                 <td><?php echo date('M j, Y g:i A', strtotime($case['created_at'])); ?></td>
                                 <td>
-                                    <a href="case_details.php?id=<?php echo $case['case_number']; ?>" class="btn btn-sm btn-primary">View</a>
+                                    <a href="case_details.php?case=<?php echo $case['case_number']; ?>" class="btn btn-sm btn-primary">View</a>
                                 </td>
                             </tr>
                             <?php endforeach; ?>

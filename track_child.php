@@ -59,7 +59,6 @@ if ($child_id) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Track Child - Child Tracking System</title>
     <link rel="stylesheet" href="assets/css/main.css">
-   
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
 </head>
@@ -72,25 +71,20 @@ if ($child_id) {
                 <div class="alert alert-danger"><?php echo $error; ?></div>
                 <a href="dashboard.php" class="btn btn-primary">Back to Dashboard</a>
             <?php elseif ($child): ?>
-                <div class="d-flex justify-between align-center mb-3">
+                <!-- Improved header layout with better mobile responsiveness -->
+                <div class="track-child-header">
                     <h1>Track Child: <?php echo htmlspecialchars($child['first_name'] . ' ' . $child['last_name']); ?></h1>
-                    <div class="d-flex gap-2">
+                    <div class="track-child-actions">
                         <button onclick="refreshLocation()" class="btn btn-success">Refresh Location</button>
                         <a href="child_profile.php?id=<?php echo $child['id']; ?>" class="btn btn-primary">View Profile</a>
                         <a href="dashboard.php" class="btn btn-secondary">Back</a>
                     </div>
                 </div>
                 
-               <!-- Child Info Card -->
+                <!-- Enhanced child info card with better styling -->
                 <div class="card mb-3 child-card">
                     <div class="child-profile">
-                        <div class="child-photo">
-                            <?php if ($child['photo']): ?>
-                                <img src="<?php echo htmlspecialchars($child['photo']); ?>" alt="Child Photo">
-                            <?php else: ?>
-                                <div class="no-photo">No Photo</div>
-                            <?php endif; ?>
-                        </div>
+                        
 
                         <div class="child-info">
                             <h2 class="child-name">
@@ -130,7 +124,7 @@ if ($child_id) {
                     </div>
                 </div>
 
-                <!-- Current Location Card -->
+                <!-- Enhanced current location card -->
                 <?php if ($current_location): ?>
                 <div class="card mb-3 location-card">
                     <div class="card-header">
@@ -159,8 +153,7 @@ if ($child_id) {
                 </div>
                 <?php endif; ?>
 
-                
-                <!-- Map -->
+                <!-- Enhanced map card -->
                 <div class="card mb-3">
                     <div class="card-header">
                         <h2 class="card-title">Location Map</h2>
@@ -168,38 +161,40 @@ if ($child_id) {
                     <div id="map" class="map-container"></div>
                 </div>
                 
-                <!-- Location History -->
+                <!-- Enhanced location history table with better mobile responsiveness -->
                 <?php if (!empty($locations)): ?>
                 <div class="card">
                     <div class="card-header">
                         <h2 class="card-title">Location History</h2>
                     </div>
-                    <table class="table table-striped">
-                        <thead>
-                            <tr>
-                                <th>Date & Time</th>
-                                <th>Coordinates</th>
-                                <th>Accuracy</th>
-                                <th>Safe Zone</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php foreach (array_slice($locations, 0, 20) as $location): ?>
-                            <tr>
-                                <td><?php echo date('M j, Y g:i A', strtotime($location['timestamp'])); ?></td>
-                                <td><?php echo $location['latitude']; ?>, <?php echo $location['longitude']; ?></td>
-                                <td><?php echo $location['accuracy']; ?>m</td>
-                                <td>
-                                    <?php if ($location['inside_geofence']): ?>
-                                        <span class="badge badge-success">Inside</span>
-                                    <?php else: ?>
-                                        <span class="badge badge-warning">Outside</span>
-                                    <?php endif; ?>
-                                </td>
-                            </tr>
-                            <?php endforeach; ?>
-                        </tbody>
-                    </table>
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Date & Time</th>
+                                    <th>Coordinates</th>
+                                    <th>Accuracy</th>
+                                    <th>Safe Zone</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php foreach (array_slice($locations, 0, 20) as $location): ?>
+                                <tr>
+                                    <td><?php echo date('M j, Y g:i A', strtotime($location['timestamp'])); ?></td>
+                                    <td><?php echo $location['latitude']; ?>, <?php echo $location['longitude']; ?></td>
+                                    <td><?php echo $location['accuracy']; ?>m</td>
+                                    <td>
+                                        <?php if ($location['inside_geofence']): ?>
+                                            <span class="badge badge-success">Inside</span>
+                                        <?php else: ?>
+                                            <span class="badge badge-warning">Outside</span>
+                                        <?php endif; ?>
+                                    </td>
+                                </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
                 <?php endif; ?>
             <?php endif; ?>
@@ -209,8 +204,6 @@ if ($child_id) {
     <?php include 'includes/footer.php'; ?>
     
     <script>
-        
-        
         let map;
         let markers = [];
         

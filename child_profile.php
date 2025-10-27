@@ -79,18 +79,7 @@ $recent_alerts = $stmt->fetchAll(PDO::FETCH_ASSOC);
         <!-- Modern profile header card -->
         <div class="card profile-card">
             <div class="profile-header">
-                <div class="profile-avatar">
-                    <?php if (!empty($child['photo'])): ?>
-                        <img src="<?php echo htmlspecialchars($child['photo']); ?>" 
-                            alt="<?php echo htmlspecialchars($child['first_name']); ?>" 
-                            class="avatar-image">
-                    <?php else: ?>
-                        <div class="avatar-placeholder">
-                            <i class="fas fa-user"></i>
-                        </div>
-                    <?php endif; ?>
-                    <div class="status-badge status-<?php echo $child['status']; ?>"></div>
-                </div>
+               
 
                 <div class="profile-info">
                     <h1 class="profile-name">
@@ -106,9 +95,9 @@ $recent_alerts = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     </div>
 
                     <div class="profile-actions">
-                        <a href="location_history.php?child_id=<?php echo $child['id']; ?>" class="btn btn-primary">
-                            <i class="fas fa-map-marker-alt"></i> Location History
-                        </a>
+                        
+                         <a href="track_child.php?id=<?php echo $child['id']; ?>" class="btn btn-lg btn-success btn-icon fs-4" title="Track Child">📍Track</a>
+
 
                         <?php if ($user_role === 'admin'): ?>
                             <a href="edit_child.php?id=<?php echo $child['id']; ?>" class="btn btn-secondary">

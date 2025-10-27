@@ -23,7 +23,6 @@ if (isset($_POST['update_case'])) {
         if ($stmt->rowCount() > 0) {
             $success = 'Case status updated successfully.';
             
-            // Send notification about case resolution
             if ($new_status === 'resolved') {
                 // Get case details
                 $stmt = $pdo->prepare("SELECT mc.case_number, c.first_name, c.last_name, c.id as child_id 
@@ -36,28 +35,29 @@ if (isset($_POST['update_case'])) {
                 if ($case_details) {
                     $alert_message = "CASE RESOLVED: " . $case_details['first_name'] . " " . $case_details['last_name'] . " has been found safe. Case " . $case_details['case_number'] . " is now closed.";
                     
-                    // Get all parents of this child
                     $stmt = $pdo->prepare("SELECT u.id, u.phone FROM users u 
                                           JOIN parent_child pc ON u.id = pc.parent_id 
                                           WHERE pc.child_id = ? AND u.status = 'active'");
                     $stmt->execute([$case_details['child_id']]);
                     $parents = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     
-                    // Get all teachers and admin
-                    $stmt = $pdo->query("SELECT id, phone FROM users WHERE role IN ('teacher', 'admin') AND status = 'active'");
-                    $staff = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                    $stmt = $pdo->prepare("SELECT u.id, u.phone FROM users u 
+                                          JOIN teacher_child tc ON u.id = tc.teacher_id 
+                                          WHERE tc.child_id = ? AND u.status = 'active'");
+                    $stmt->execute([$case_details['child_id']]);
+                    $teachers = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     
-                    $all_recipients = array_merge($parents, $staff);
+                    // Combine parents and teachers for this specific child
+                    $all_recipients = array_merge($parents, $teachers);
                     $recipient_ids = array_column($all_recipients, 'id');
                     
                     // Insert alert
                     $stmt = $pdo->prepare("INSERT INTO alerts (case_id, child_id, alert_type, message, severity, sent_to) VALUES (?, ?, 'missing', ?, 'info', ?)");
                     $stmt->execute([$case_id, $case_details['child_id'], $alert_message, json_encode($recipient_ids)]);
                     
-                    // Send SMS alerts
                     foreach ($all_recipients as $recipient) {
                         if (!empty($recipient['phone'])) {
-                            sendSMS($recipient['phone'], $alert_message);
+                            sendSMSViaSemaphore($recipient['phone'], $alert_message);
                         }
                     }
                 }
@@ -99,17 +99,6 @@ try {
     $cases = [];
 }
 
-function sendSMS($phone, $message) {
-    global $pdo;
-    
-    try {
-        $stmt = $pdo->prepare("INSERT INTO sms_logs (phone_number, message, status) VALUES (?, ?, 'sent')");
-        $stmt->execute([$phone, $message]);
-        return true;
-    } catch (Exception $e) {
-        return false;
-    }
-}
 ?>
 
 <!DOCTYPE html>
@@ -204,14 +193,9 @@ function sendSMS($phone, $message) {
                                     <strong><?php echo htmlspecialchars($case['case_number']); ?></strong>
                                 </td>
                                 <td>
-                                    <div class="d-flex align-center gap-2">
-                                        <?php if ($case['photo']): ?>
-                                            <img src="<?php echo htmlspecialchars($case['photo']); ?>" alt="Child Photo" style="width: 30px; height: 30px; border-radius: 50%; object-fit: cover;">
-                                        <?php endif; ?>
-                                        <div>
-                                            <strong><?php echo htmlspecialchars($case['first_name'] . ' ' . $case['last_name']); ?></strong><br>
-                                            <small><?php echo htmlspecialchars($case['lrn']); ?></small>
-                                        </div>
+                                    <div>
+                                        <strong><?php echo htmlspecialchars($case['first_name'] . ' ' . $case['last_name']); ?></strong><br>
+                                        <small><?php echo htmlspecialchars($case['lrn']); ?></small>
                                     </div>
                                 </td>
                                 <td>

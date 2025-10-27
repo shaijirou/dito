@@ -3,6 +3,7 @@ require_once 'config/config.php';
 
 $error = '';
 $success = '';
+$message = '';
 $child = null; // Initialize the variable
 $lrn = isset($_GET['lrn']) ? sanitizeInput($_GET['lrn']) : '';
 
@@ -14,7 +15,10 @@ if ($lrn) {
         $child = $stmt->fetch(PDO::FETCH_ASSOC);
         
         if (!$child) {
-            $error = 'Device not found in system. Please check your IMEI number.';
+            $error = 'Student not found in system. Please check your Student LRN.';
+            // Show immediate browser alert
+            echo '<script>alert(' . json_encode($error) . ');</script>';
+            echo '<script>location = "mobile_tracking.php";</script>';
         }
     } catch (PDOException $e) {
         $error = 'Database error: ' . $e->getMessage();
@@ -37,14 +41,12 @@ if ($lrn) {
             <div class="card-header">
                 <h1>📱 Mobile GPS Tracker</h1>
                 <?php if ($child): ?>
-                    <h2><?php echo htmlspecialchars($child['first_name'] . ' ' . $child['last_name']); ?></h2>
+                    <h2 class="text-primary-50"><?php echo htmlspecialchars($child['first_name'] . ' ' . $child['last_name']); ?></h2>
                     <p>LRN: <?php echo htmlspecialchars($child['lrn']); ?></p>
                 <?php endif; ?>
             </div>
 
-            <?php if ($error): ?>
-                <div class="alert alert-danger"><?php echo $error; ?></div>
-            <?php endif; ?>
+            
 
             <?php if (!$lrn): ?>
                 <div class="alert alert-warning">
@@ -57,6 +59,12 @@ if ($lrn) {
                     <label for="manual_lrn" class="form-label">Enter Your Child LRN:</label>
                     <input type="text" id="manual_lrn" class="form-control" placeholder="Enter LRN">
                     <button onclick="setDeviceId()" class="btn btn-primary big-button mt-2">Set LRN</button>
+
+
+                    <div class="text-center mt-3">
+                        <p>Log In your Account <a href="login.php">Log In</a></p>
+                        
+                    </div>
                 </div>
 
             <?php elseif ($child): ?>
@@ -223,6 +231,19 @@ if ($lrn) {
             document.getElementById('stop-tracking').style.display = 'block';
             
             log('✅ Tracking started with ' + (interval/1000) + 's intervals');
+        }
+
+         function stopTracking() {
+            if (watchId !== null) {
+            navigator.geolocation.clearWatch(watchId);
+            watchId = null;
+            }
+            clearInterval(trackingInterval);
+            trackingInterval = null;
+            updateStatus('inactive', 'GPS Status: Inactive');
+            document.getElementById('start-tracking').style.display = 'block';
+            document.getElementById('stop-tracking').style.display = 'none';
+            log('⏹️ Tracking stopped');
         }
 
         

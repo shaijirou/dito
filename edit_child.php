@@ -35,7 +35,7 @@ if ($child_id) {
         'emergency_contact' => '',
         'status' => 'active',
         'medical_info' => '',
-        'photo' => '',
+       
         // Added 'gender' field
         'gender' => '',
         // Added 'age' field (though not used in the form, it was in the initial $child array in updates)
@@ -62,40 +62,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
         
-        // Handle photo upload
-        $photo_path = $child['photo'] ?? ''; // Initialize with existing photo path
-        if (isset($_FILES['photo']) && $_FILES['photo']['error'] === UPLOAD_ERR_OK) {
-            $upload_dir = 'uploads/children/';
-            if (!file_exists($upload_dir)) {
-                mkdir($upload_dir, 0777, true);
-            }
-            
-            $file_extension = pathinfo($_FILES['photo']['name'], PATHINFO_EXTENSION);
-            $new_filename = uniqid() . '.' . $file_extension;
-            $photo_path = $upload_dir . $new_filename;
-            
-            if (move_uploaded_file($_FILES['photo']['tmp_name'], $photo_path)) {
-                // Delete old photo if exists
-                // This logic remains, checking against $child['photo']
-                if (!empty($child['photo']) && file_exists($child['photo'])) {
-                    unlink($child['photo']);
-                }
-            }
-        } elseif (isset($_POST['remove_photo'])) { // Handle removing the photo
-            if (!empty($child['photo']) && file_exists($child['photo'])) {
-                unlink($child['photo']);
-            }
-            $photo_path = ''; // Clear the path if removed
-        }
-        
         if ($child_id) {
             // Update using only children table columns, including 'lrn', 'gender'
-            // Removed 'student_id', 'device_id', and 'photo_url' related logic from the main update statement
+            
             $stmt = $pdo->prepare("UPDATE children SET 
                                   first_name = ?, last_name = ?, date_of_birth = ?, 
                                   lrn = ?, grade = ?, emergency_contact = ?, 
-                                  status = ?, medical_info = ?, photo = ?, 
-                                  gender = ?, updated_at = NOW()
+                                  status = ?, medical_info = ?, gender = ?, updated_at = NOW()
                                   WHERE id = ?");
             $stmt->execute([
                 $_POST['first_name'], 
@@ -106,18 +79,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $_POST['emergency_contact'] ?? '', // Use empty string if not set
                 $_POST['status'], 
                 $_POST['medical_info'] ?? '', // Use empty string if not set
-                $photo_path,
                 $_POST['gender'] ?? '', // Use empty string if not set
                 $child_id
             ]);
         } else {
             // Insert using only children table columns, including 'lrn', 'gender'
-            // Removed 'student_id', 'device_id', and 'photo_url' related logic from the main insert statement
+            // Removed 'student_id', 'device_id',  related logic from the main insert statement
             $stmt = $pdo->prepare("INSERT INTO children 
                                   (first_name, last_name, date_of_birth, lrn, grade, 
-                                   emergency_contact, status, medical_info, photo, gender,
+                                   emergency_contact, status, medical_info, gender,
                                    created_at, updated_at) 
-                                  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())");
+                                  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())");
             $stmt->execute([
                 $_POST['first_name'], 
                 $_POST['last_name'], 
@@ -127,14 +99,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $_POST['emergency_contact'] ?? '', // Use empty string if not set
                 $_POST['status'], 
                 $_POST['medical_info'] ?? '', // Use empty string if not set
-                $photo_path,
+              
                 $_POST['gender'] ?? '' // Use empty string if not set
             ]);
             $child_id = $pdo->lastInsertId();
         }
-        
-        // <DELETE> Removed all logic related to emergency_contacts table, as it's not in the updates.
-        // <DELETE> Removed all logic related to child_photos table, as it's not in the updates.
         
         $pdo->commit();
         $success = $child_id ? 'Child profile updated successfully!' : 'Child added successfully!';
@@ -194,7 +163,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
         <?php endif; ?>
 
-        <!-- Form now includes 'lrn', 'gender', and handles photo upload -->
+        <!-- Form now includes 'lrn', 'gender', and  -->
         <form method="POST" enctype="multipart/form-data" class="edit-form">
             <div class="row">
                 <!-- Basic Information -->
@@ -249,11 +218,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                         <label for="grade" class="form-label">Grade</label>
                                         <select id="grade" name="grade" class="form-control">
                                             <option value="">Select Grade</option>
-                                            <?php for ($i = 1; $i <= 12; $i++): ?>
-                                                <option value="<?php echo $i; ?>" <?php echo $child['grade'] == $i ? 'selected' : ''; ?>>
-                                                    Grade <?php echo $i; ?>
-                                                </option>
-                                            <?php endfor; ?>
+                                            <option value="1st Grade" <?php echo $child['grade'] == '1st Grade' ? 'selected' : ''; ?>>1st Grade</option>
+                                            <option value="2nd Grade" <?php echo $child['grade'] == '2nd Grade' ? 'selected' : ''; ?>>2nd Grade</option>
+                                            <option value="3rd Grade" <?php echo $child['grade'] == '3rd Grade' ? 'selected' : ''; ?>>3rd Grade</option>
+                                            <option value="4th Grade" <?php echo $child['grade'] == '4th Grade' ? 'selected' : ''; ?>>4th Grade</option>
+                                            <option value="5th Grade" <?php echo $child['grade'] == '5th Grade' ? 'selected' : ''; ?>>5th Grade</option>
+                                            <option value="6th Grade" <?php echo $child['grade'] == '6th Grade' ? 'selected' : ''; ?>>6th Grade</option>
                                         </select>
                                     </div>
                                 </div>
@@ -305,44 +275,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <!-- Emergency Contacts: <DELETE> Removed this whole section as it's not in the updates -->
                 </div>
 
-                <!-- Photo Sidebar -->
-                <div class="col-lg-4">
-                    <div class="card">
-                        <div class="card-header">
-                            <h4><i class="fas fa-camera"></i> Profile Photo</h4>
-                        </div>
-                        <div class="card-body text-center">
-                            <div class="photo-upload-container">
-                                <!-- Display photo from the 'photo' column -->
-                                <?php if (!empty($child['photo'])): ?>
-                                    <img src="<?php echo htmlspecialchars($child['photo']); ?>" 
-                                         alt="Child Photo" class="current-photo" id="photo-preview">
-                                <?php else: ?>
-                                    <div class="photo-placeholder" id="photo-preview">
-                                        <i class="fas fa-user"></i>
-                                        <p>No photo uploaded</p>
-                                    </div>
-                                <?php endif; ?>
-                            </div>
-                            
-                            <div class="photo-upload-actions">
-                                <input type="file" id="photo-upload" name="photo" accept="image/*" style="display: none;" onchange="previewPhoto(this)">
-                                <button type="button" onclick="document.getElementById('photo-upload').click()" class="btn btn-primary btn-sm">
-                                    <i class="fas fa-upload"></i> Upload Photo
-                                </button>
-                                <!-- Show remove button only if a photo exists -->
-                                <?php if (!empty($child['photo'])): ?>
-                                    <button type="button" onclick="removePhoto()" class="btn btn-danger btn-sm">
-                                        <i class="fas fa-trash"></i> Remove
-                                    </button>
-                                <?php endif; ?>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- <DELETE> Removed Device Settings section -->
-                    <!-- <DELETE> Removed Quick Actions section -->
-                </div>
             </div>
 
             <!-- Form Actions -->
@@ -368,44 +300,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </div>
 
 <script>
-function previewPhoto(input) {
-    if (input.files && input.files[0]) {
-        const reader = new FileReader();
-        
-        reader.onload = function(e) {
-            const preview = document.getElementById('photo-preview');
-            preview.innerHTML = `<img src="${e.target.result}" alt="Photo Preview" class="current-photo">`;
-            // Remove the 'remove_photo' hidden input if a new photo is selected
-            const existingHiddenInput = document.querySelector('input[name="remove_photo"]');
-            if (existingHiddenInput) {
-                existingHiddenInput.remove();
-            }
-        };
-        
-        reader.readAsDataURL(input.files[0]);
-    }
-}
 
-function removePhoto() {
-    if (confirm('Are you sure you want to remove the profile photo?')) {
-        document.getElementById('photo-preview').innerHTML = `
-            <div class="photo-placeholder">
-                <i class="fas fa-user"></i>
-                <p>No photo uploaded</p>
-            </div>
-        `;
-        
-        // Add a hidden input to signal the server to remove the photo
-        // Only add if it doesn't already exist from a previous interaction
-        if (!document.querySelector('input[name="remove_photo"]')) {
-            const hiddenInput = document.createElement('input');
-            hiddenInput.type = 'hidden';
-            hiddenInput.name = 'remove_photo';
-            hiddenInput.value = '1';
-            document.querySelector('form').appendChild(hiddenInput);
-        }
-    }
-}
 
 // Form submission validation
 document.querySelector('form').addEventListener('submit', function(e) {

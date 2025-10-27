@@ -125,7 +125,7 @@ try {
 <div class="container mt-4">
     <div class="row">
         <div class="col-12">
-            <h2><i class="fas fa-cogs"></i> System Settings</h2>
+            <h1><i class="fas fa-cogs"></i> System Settings</h1>
             
             <?php if ($error): ?>
                 <div class="alert alert-danger alert-dismissible fade show">

@@ -75,35 +75,43 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     if ($stmt->execute([$case_number, $child_id, $_SESSION['user_id'], $priority, $description, $last_seen_location, $last_seen_time])) {
                         $case_id = $pdo->lastInsertId();
                         
-                        // Create alert
+                        // Create alert message
                         $alert_message = "MISSING CHILD ALERT: " . $child['first_name'] . " " . $child['last_name'] . " has been reported missing. Case: " . $case_number;
                         
-                        // Get all parents of this child
-                        $stmt = $pdo->prepare("SELECT u.id, u.phone FROM users u 
+                        $stmt = $pdo->prepare("SELECT u.id, u.phone, u.full_name FROM users u 
                                               JOIN parent_child pc ON u.id = pc.parent_id 
                                               WHERE pc.child_id = ? AND u.status = 'active'");
                         $stmt->execute([$child_id]);
                         $parents = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         
-                        // Get all teachers and admin
-                        $stmt = $pdo->query("SELECT id, phone FROM users WHERE role IN ('teacher', 'admin') AND status = 'active'");
-                        $staff = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                        $stmt = $pdo->prepare("SELECT u.id, u.phone, u.full_name FROM users u 
+                                              JOIN teacher_child tc ON u.id = tc.teacher_id 
+                                              WHERE tc.child_id = ? AND u.status = 'active'");
+                        $stmt->execute([$child_id]);
+                        $teachers = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         
-                        $all_recipients = array_merge($parents, $staff);
+                        // Get all admins
+                        $stmt = $pdo->query("SELECT id, phone, full_name FROM users WHERE role = 'admin' AND status = 'active'");
+                        $admins = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                        
+                        // Combine all recipients
+                        $all_recipients = array_merge($parents, $teachers, $admins);
                         $recipient_ids = array_column($all_recipients, 'id');
                         
                         // Insert alert
                         $stmt = $pdo->prepare("INSERT INTO alerts (case_id, child_id, alert_type, message, severity, sent_to) VALUES (?, ?, 'missing', ?, 'critical', ?)");
                         $stmt->execute([$case_id, $child_id, $alert_message, json_encode($recipient_ids)]);
                         
-                        // Send SMS alerts
+                        $sms_sent_count = 0;
                         foreach ($all_recipients as $recipient) {
                             if (!empty($recipient['phone'])) {
-                                sendSMS($recipient['phone'], $alert_message);
+                                if (sendSMSViaSemaphore($recipient['phone'], $alert_message)) {
+                                    $sms_sent_count++;
+                                }
                             }
                         }
                         
-                        $success = 'Missing child report created successfully. Case Number: ' . $case_number . '. Alerts have been sent to parents and staff.';
+                        $success = 'Missing child report created successfully. Case Number: ' . $case_number . '. SMS alerts sent to ' . $sms_sent_count . ' parents and teachers.';
                         $_POST = []; // Clear form
                     } else {
                         $error = 'Failed to create missing case. Please try again.';
@@ -112,28 +120,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             }
         } catch (PDOException $e) {
             $error = 'Database error. Please try again.';
+            error_log("[MISSING_CASE] Error: " . $e->getMessage());
         }
-    }
-}
-
-// SMS sending function
-function sendSMS($phone, $message) {
-    global $pdo;
-    
-    try {
-        // Log SMS attempt
-        $stmt = $pdo->prepare("INSERT INTO sms_logs (phone_number, message, status) VALUES (?, ?, 'pending')");
-        $stmt->execute([$phone, $message]);
-        $sms_id = $pdo->lastInsertId();
-        
-        // Here you would integrate with your SMS provider
-        // For now, we'll just mark as sent
-        $stmt = $pdo->prepare("UPDATE sms_logs SET status = 'sent', sent_at = NOW() WHERE id = ?");
-        $stmt->execute([$sms_id]);
-        
-        return true;
-    } catch (Exception $e) {
-        return false;
     }
 }
 ?>
@@ -275,7 +263,7 @@ function sendSMS($phone, $message) {
                             <strong>Important:</strong> Submitting this form will notify:
                             <ul>
                                 <li>Parents/Guardians of the child</li>
-                                <li>All teachers and staff</li>
+                                <li>Teachers assigned to the child</li>
                                 <li>School administrators</li>
                             </ul>
                             Double-check all information before submitting.

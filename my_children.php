@@ -71,12 +71,7 @@ try {
                 <?php foreach ($children as $child): ?>
                 <div class="child-detailed-card">
                     <!-- Child Header -->
-                    <div class="child-header-detailed">
-                        <?php if ($child['photo']): ?>
-                            <img src="<?php echo htmlspecialchars($child['photo']); ?>" alt="Child Photo" class="child-photo-large">
-                        <?php else: ?>
-                            <div class="child-photo-placeholder-large">No Photo</div>
-                        <?php endif; ?>
+                    <div class="child-header-detailed"> 
                         
                         <div class="child-main-info">
                             <h2><?php echo htmlspecialchars($child['first_name'] . ' ' . $child['last_name']); ?></h2>

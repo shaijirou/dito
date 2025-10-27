@@ -23,29 +23,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $medical_info = sanitizeInput($_POST['medical_info']);
     $parent_name = sanitizeInput($_POST['parent_name'] ?? '');
     
-    // Handle photo upload
-    $photo_path = '';
-    if (isset($_FILES['photo']) && $_FILES['photo']['error'] == 0) {
-        $upload_dir = 'uploads/children/';
-        if (!file_exists($upload_dir)) {
-            mkdir($upload_dir, 0777, true);
-        }
-        
-        $file_extension = strtolower(pathinfo($_FILES['photo']['name'], PATHINFO_EXTENSION));
-        $allowed_extensions = ['jpg', 'jpeg', 'png', 'gif'];
-        
-        if (in_array($file_extension, $allowed_extensions) && $_FILES['photo']['size'] <= MAX_FILE_SIZE) {
-            $photo_name = uniqid() . '.' . $file_extension;
-            $photo_path = $upload_dir . $photo_name;
-            
-            if (!move_uploaded_file($_FILES['photo']['tmp_name'], $photo_path)) {
-                $error = 'Failed to upload photo.';
-                $photo_path = '';
-            }
-        } else {
-            $error = 'Invalid photo format or size too large.';
-        }
-    }
+    
+   
     
     if (empty($error)) {
         // Validation
@@ -58,11 +37,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 $stmt->execute([$lrn]);
                 
                 if ($stmt->fetch()) {
-                    $error = 'Student ID already exists.';
+                    $error = 'Student LRN already exists.';
                 } else {
-                    $stmt = $pdo->prepare("INSERT INTO children (first_name, last_name, date_of_birth, grade, photo, lrn, age, gender, emergency_contact, medical_info, parent_name) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+                    $stmt = $pdo->prepare("INSERT INTO children (first_name, last_name, date_of_birth, grade, lrn, age, gender, emergency_contact, medical_info, parent_name) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
                     
-                    if ($stmt->execute([$first_name, $last_name, $date_of_birth, $grade, $photo_path, $lrn, $age, $gender, $emergency_contact, $medical_info, $parent_name])) {
+                    if ($stmt->execute([$first_name, $last_name, $date_of_birth, $grade, $lrn, $age, $gender, $emergency_contact, $medical_info, $parent_name])) {
                         $child_id = $pdo->lastInsertId();
                         
                         require_once 'api/auto_assign_relationships.php';
@@ -248,7 +227,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             
             <div class="card">
                 <div class="card-header">
-                    <h2 class="card-title">Child Information</h2>
+                    <h2 class="--primary-50">Child Information</h2>
                 </div>
                 
                 <form method="POST" action="" enctype="multipart/form-data">
@@ -314,12 +293,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         <small>Leave blank to skip auto-assignment. Must match a parent's full name in the system.</small>
                     </div>
                     
-                    <div class="form-group">
-                        <label for="photo" class="form-label">Photo</label>
-                        <input type="file" id="photo" name="photo" class="form-control" accept="image/*">
-                        <small>Max file size: 5MB. Supported formats: JPG, PNG, GIF</small>
-                    </div>
-                    
+                
                     <div class="form-group">
                         <label for="medical_info" class="form-label">Medical Information</label>
                         <textarea id="medical_info" name="medical_info" class="form-control" rows="3" placeholder="Any medical conditions, allergies, or special needs..."><?php echo isset($_POST['medical_info']) ? htmlspecialchars($_POST['medical_info']) : ''; ?></textarea>

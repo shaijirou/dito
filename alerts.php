@@ -61,16 +61,10 @@ if (isset($_POST['mark_read'])) {
     
     <div class="container">
         <div class="main-content">
-            <div class="d-flex justify-between align-center mb-3">
+            <!-- Improved header layout for mobile responsiveness -->
+            <div class="alerts-header">
                 <h1>Alerts & Notifications</h1>
-                <div class="d-flex gap-2">
-                    <span class="badge badge-danger">
-                        <?php echo count(array_filter($alerts, function($alert) { return $alert['severity'] === 'critical'; })); ?> Critical
-                    </span>
-                    <span class="badge badge-warning">
-                        <?php echo count(array_filter($alerts, function($alert) { return $alert['severity'] === 'warning'; })); ?> Warning
-                    </span>
-                </div>
+                
             </div>
             
             <?php if ($error): ?>
@@ -122,61 +116,65 @@ if (isset($_POST['mark_read'])) {
                         <p>No alerts found.</p>
                     </div>
                 <?php else: ?>
-                    <div style="max-height: 600px; overflow-y: auto;">
+                    <!-- Improved alert list container with better mobile scrolling -->
+                    <div class="alerts-list-container">
                         <?php foreach ($alerts as $alert): ?>
-                        <div class="alert alert-<?php echo $alert['severity'] === 'critical' ? 'danger' : ($alert['severity'] === 'warning' ? 'warning' : 'info'); ?>" style="margin: 1rem; border-left: 4px solid;">
-                            <div class="d-flex justify-between align-center">
-                                <div style="flex: 1;">
-                                    <div class="d-flex align-center gap-2 mb-2">
-                                        <span class="badge badge-<?php echo $alert['alert_type'] === 'missing' ? 'danger' : ($alert['alert_type'] === 'geofence_exit' ? 'warning' : 'info'); ?>">
-                                            <?php echo ucfirst(str_replace('_', ' ', $alert['alert_type'])); ?>
-                                        </span>
-                                        
-                                        <span class="badge badge-<?php echo $alert['severity'] === 'critical' ? 'danger' : ($alert['severity'] === 'warning' ? 'warning' : 'info'); ?>">
-                                            <?php echo ucfirst($alert['severity']); ?>
-                                        </span>
-                                        
-                                        <?php if ($alert['case_number']): ?>
-                                            <span class="badge badge-secondary">Case: <?php echo htmlspecialchars($alert['case_number']); ?></span>
-                                        <?php endif; ?>
-                                        
-                                        <small class="text-muted">
-                                            <?php echo date('M j, Y g:i A', strtotime($alert['created_at'])); ?>
-                                        </small>
-                                    </div>
+                        <div class="alert-item alert-<?php echo $alert['severity'] === 'critical' ? 'danger' : ($alert['severity'] === 'warning' ? 'warning' : 'info'); ?>">
+                            <!-- Better structured alert content for mobile -->
+                            <div class="alert-header">
+                                <div class="alert-badges-group">
+                                    <span class="badge badge-<?php echo $alert['alert_type'] === 'missing' ? 'danger' : ($alert['alert_type'] === 'geofence_exit' ? 'warning' : 'info'); ?>">
+                                        <?php echo ucfirst(str_replace('_', ' ', $alert['alert_type'])); ?>
+                                    </span>
                                     
-                                    <div>
-                                        <strong>Child:</strong> <?php echo htmlspecialchars($alert['first_name'] . ' ' . $alert['last_name']); ?> 
-                                        (<?php echo htmlspecialchars($alert['lrn']); ?>)
-                                    </div>
+                                    <span class="badge badge-<?php echo $alert['severity'] === 'critical' ? 'danger' : ($alert['severity'] === 'warning' ? 'warning' : 'info'); ?>">
+                                        <?php echo ucfirst($alert['severity']); ?>
+                                    </span>
                                     
-                                    <div class="mt-2">
-                                        <strong>Message:</strong> <?php echo htmlspecialchars($alert['message']); ?>
-                                    </div>
-                                    
-                                    <div class="mt-2">
-                                        <small>
-                                            <strong>SMS:</strong> <?php echo $alert['sms_sent'] ? 'Sent' : 'Not Sent'; ?> | 
-                                            <strong>Email:</strong> <?php echo $alert['email_sent'] ? 'Sent' : 'Not Sent'; ?> | 
-                                            <strong>Status:</strong> <?php echo ucfirst($alert['status']); ?>
-                                        </small>
-                                    </div>
+                                    <?php if ($alert['case_number']): ?>
+                                        <span class="badge badge-secondary">Case: <?php echo htmlspecialchars($alert['case_number']); ?></span>
+                                    <?php endif; ?>
                                 </div>
                                 
-                                <div class="d-flex gap-1">
-                                    <?php if ($alert['case_number']): ?>
-                                        <a href="case_details.php?case=<?php echo urlencode($alert['case_number']); ?>" class="btn btn-sm btn-primary">View Case</a>
-                                    <?php endif; ?>
-                                    
-                                    <a href="track_child.php?id=<?php echo $alert['child_id']; ?>" class="btn btn-sm btn-success">Track</a>
-                                    
-                                    <?php if ($alert['status'] === 'pending'): ?>
-                                        <form method="POST" action="" style="display: inline;">
-                                            <input type="hidden" name="alert_id" value="<?php echo $alert['id']; ?>">
-                                            <button type="submit" name="mark_read" class="btn btn-sm btn-secondary">Mark Read</button>
-                                        </form>
-                                    <?php endif; ?>
+                                <small class="alert-time">
+                                    <?php echo date('M j, Y g:i A', strtotime($alert['created_at'])); ?>
+                                </small>
+                            </div>
+                            
+                            <div class="alert-body">
+                                <div class="alert-info-row">
+                                    <strong>Child:</strong> 
+                                    <span><?php echo htmlspecialchars($alert['first_name'] . ' ' . $alert['last_name']); ?> (<?php echo htmlspecialchars($alert['lrn']); ?>)</span>
                                 </div>
+                                
+                                <div class="alert-info-row">
+                                    <strong>Message:</strong> 
+                                    <span><?php echo htmlspecialchars($alert['message']); ?></span>
+                                </div>
+                                
+                                <div class="alert-info-row">
+                                    <small>
+                                        <strong>SMS:</strong> <?php echo $alert['sms_sent'] ? 'Sent' : 'Not Sent'; ?> | 
+                                        <strong>Email:</strong> <?php echo $alert['email_sent'] ? 'Sent' : 'Not Sent'; ?> | 
+                                        <strong>Status:</strong> <?php echo ucfirst($alert['status']); ?>
+                                    </small>
+                                </div>
+                            </div>
+                            
+                            <!-- Improved button layout for mobile -->
+                            <div class="alert-actions">
+                                <?php if ($alert['case_number']): ?>
+                                    <a href="case_details.php?case=<?php echo urlencode($alert['case_number']); ?>" class="btn btn-sm btn-primary">View Case</a>
+                                <?php endif; ?>
+                                
+                                <a href="track_child.php?id=<?php echo $alert['child_id']; ?>" class="btn btn-sm btn-success">Track</a>
+                                
+                                <?php if ($alert['status'] === 'pending'): ?>
+                                    <form method="POST" action="" class="alert-form">
+                                        <input type="hidden" name="alert_id" value="<?php echo $alert['id']; ?>">
+                                        <button type="submit" name="mark_read" class="btn btn-sm btn-secondary">Mark Read</button>
+                                    </form>
+                                <?php endif; ?>
                             </div>
                         </div>
                         <?php endforeach; ?>

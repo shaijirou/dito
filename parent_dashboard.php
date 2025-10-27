@@ -112,11 +112,6 @@ try {
                     <?php foreach ($children as $child): ?>
                     <div class="child-card">
                         <div class="child-header">
-                            <?php if ($child['photo']): ?>
-                                <img src="<?php echo htmlspecialchars($child['photo']); ?>" alt="Child Photo" class="child-photo">
-                            <?php else: ?>
-                                <div class="child-photo-placeholder">No Photo</div>
-                            <?php endif; ?>
                             
                             <div class="child-info">
                                 <h3><?php echo htmlspecialchars($child['first_name'] . ' ' . $child['last_name']); ?></h3>

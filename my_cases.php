@@ -23,7 +23,7 @@ try {
     $children = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
     // Get cases for parent's children
-    $query = "SELECT mc.*, c.first_name, c.last_name, c.lrn, c.photo,
+    $query = "SELECT mc.*, c.first_name, c.last_name, c.lrn,
               (SELECT COUNT(*) FROM alerts a WHERE a.case_id = mc.id) as alert_count
               FROM missing_cases mc 
               JOIN children c ON mc.child_id = c.id 
@@ -145,11 +145,7 @@ try {
                         <div class="case-main-info">
                             <!-- Child Information -->
                             <div class="case-child-info">
-                                <?php if ($case['photo']): ?>
-                                    <img src="<?php echo htmlspecialchars($case['photo']); ?>" alt="Child Photo" class="case-child-photo">
-                                <?php else: ?>
-                                    <div class="case-child-photo-placeholder">No Photo</div>
-                                <?php endif; ?>
+                            
                                 <div>
                                     <h3 style="margin: 0;"><?php echo htmlspecialchars($case['first_name'] . ' ' . $case['last_name']); ?></h3>
                                     <small>Student ID: <?php echo htmlspecialchars($case['lrn']); ?></small>

@@ -158,74 +158,69 @@ if (!empty($search)) {
                         <?php endif; ?>
                     </div>
                 <?php else: ?>
-                    <table class="table table-striped">
-                        <thead>
-                            <tr>
-                                <th>Photo</th>
-                                <th>LRN</th>
-                                <th>Name</th>
-                                <th>Grade</th>
-                                <th>Age</th>
-                                <th>Parents</th>
-                                <th>Device Status</th>
-                                <th>Active Cases</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php foreach ($children as $child): ?>
-                            <tr>
-                                <td>
-                                    <?php if ($child['photo']): ?>
-                                        <img src="<?php echo htmlspecialchars($child['photo']); ?>" alt="Child Photo" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
-                                    <?php else: ?>
-                                        <div style="width: 40px; height: 40px; border-radius: 50%; background: #ddd; display: flex; align-items: center; justify-content: center; font-size: 12px;">
-                                            No Photo
-                                        </div>
-                                    <?php endif; ?>
-                                </td>
-                                <td><?php echo htmlspecialchars($child['lrn']); ?></td>
-                                <td>
-                                    <strong><?php echo htmlspecialchars($child['first_name'] . ' ' . $child['last_name']); ?></strong>
-                                </td>
-                                <td><?php echo htmlspecialchars($child['grade']); ?></td>
-                                <td>
-                                    <?php 
-                                    $age = date_diff(date_create($child['date_of_birth']), date_create('today'))->y;
-                                    echo $age . ' years';
-                                    ?>
-                                </td>
-                                <td>
-                                    <span class="badge badge-info"><?php echo $child['parent_count']; ?> parent(s)</span>
-                                </td>
-                                <td>
-                                    <?php if ($child['lrn']): ?>
-                                        <span class="badge badge-success">Connected</span>
-                                    <?php else: ?>
-                                        <span class="badge badge-warning">No Device</span>
-                                    <?php endif; ?>
-                                </td>
-                                <td>
-                                    <?php if ($child['active_cases'] > 0): ?>
-                                        <span class="badge badge-danger"><?php echo $child['active_cases']; ?> active</span>
-                                    <?php else: ?>
-                                        <span class="badge badge-success">None</span>
-                                    <?php endif; ?>
-                                </td>
-                                <td>
-                                    <div class="d-flex gap-1">
-                                        <a href="child_profile.php?id=<?php echo $child['id']; ?>" class="btn btn-sm btn-primary">View</a>
-                                        <a href="track_child.php?id=<?php echo $child['id']; ?>" class="btn btn-sm btn-success">Track</a>
-                                        <?php if ($_SESSION['role'] === 'admin'): ?>
-                                            <a href="edit_child.php?id=<?php echo $child['id']; ?>" class="btn btn-sm btn-warning">Edit</a>
-                                            <a href="?delete=<?php echo $child['id']; ?>" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to deactivate this child record?')">Delete</a>
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>LRN</th>
+                                    <th>Name</th>
+                                    <th>Grade</th>
+                                    <th>Age</th>
+                                    <th>Parents</th>
+                                    <th>Device Status</th>
+                                    <th>Active Cases</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php foreach ($children as $child): ?>
+                                <tr>
+                                    <td data-label="LRN"><?php echo htmlspecialchars($child['lrn']); ?></td>
+                                    <td data-label="Name">
+                                        <strong><?php echo htmlspecialchars($child['first_name'] . ' ' . $child['last_name']); ?></strong>
+                                    </td>
+                                    <td data-label="Grade"><?php echo htmlspecialchars($child['grade']); ?></td>
+                                    <td data-label="Age">
+                                        <?php 
+                                        $age = date_diff(date_create($child['date_of_birth']), date_create('today'))->y;
+                                        echo $age . ' years';
+                                        ?>
+                                    </td>
+                                    <td data-label="Parents">
+                                        <span class="badge badge-info"><?php echo $child['parent_count']; ?> parent(s)</span>
+                                    </td>
+                                    <td data-label="Device Status">
+                                        <?php if ($child['lrn']): ?>
+                                            <span class="badge badge-success">Connected</span>
+                                        <?php else: ?>
+                                            <span class="badge badge-warning">No Device</span>
                                         <?php endif; ?>
-                                    </div>
-                                </td>
-                            </tr>
-                            <?php endforeach; ?>
-                        </tbody>
-                    </table>
+                                    </td>
+                                    <td data-label="Active Cases">
+                                        <?php if ($child['active_cases'] > 0): ?>
+                                            <span class="badge badge-danger"><?php echo $child['active_cases']; ?> active</span>
+                                        <?php else: ?>
+                                            <span class="badge badge-success">None</span>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td data-label="Actions">
+                                        <div class="action-buttons">
+
+                                            <a href="child_profile.php?id=<?php echo $child['id']; ?>" class="btn btn-lg btn-primary btn-icon fs-4" title="View Profile">👁️</a>
+
+                                            <a href="track_child.php?id=<?php echo $child['id']; ?>" class="btn btn-lg btn-success btn-icon fs-4" title="Track Child">📍</a>
+
+                                            <?php if ($_SESSION['role'] === 'admin'): ?>
+                                                <a href="edit_child.php?id=<?php echo $child['id']; ?>" class="btn btn-lg btn-warning btn-icon fs-4" title="Edit Child">✏️</a>
+                                                <a href="?delete=<?php echo $child['id']; ?>" class="btn btn-lg btn-danger btn-icon fs-4" onclick="return confirm('Are you sure you want to deactivate this child record?')" title="Delete Child">🗑️</a>
+                                            <?php endif; ?>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    </div>
                 <?php endif; ?>
             </div>
         </div>

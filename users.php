@@ -32,7 +32,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 
             case 'toggle_status':
                 $user_id = (int)$_POST['user_id'];
-                $stmt = $pdo->prepare("UPDATE users SET status = NOT is_active WHERE id = ?");
+                $stmt = $pdo->prepare("UPDATE users SET status = NOT status WHERE id = ?");
                 $stmt->execute([$user_id]);
                 $success_message = "User status updated successfully.";
                 break;
@@ -132,7 +132,7 @@ $stats = $stats_stmt->fetch();
     <div class="row">
         <div class="col-12">
             <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2><i class="fas fa-users"></i> User Management</h2>
+                <h1><i class="fas fa-users"></i> User Management</h1>
                 <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addUserModal">
                     <i class="fas fa-plus"></i> Add New User
                 </button>
@@ -229,8 +229,9 @@ $stats = $stats_stmt->fetch();
                         <label class="form-label">Role</label>
                         <select class="form-select" name="role">
                             <option value="">All Roles</option>
-                            <option value="admin" <?php echo $role_filter === 'admin' ? 'selected' : ''; ?>>Admin</option>
+                            <!-- <option value="admin" <?php echo $role_filter === 'admin' ? 'selected' : ''; ?>>Admin</option> -->
                             <option value="parent" <?php echo $role_filter === 'parent' ? 'selected' : ''; ?>>Parent</option>
+                            <option value="teacher" <?php echo $role_filter === 'teacher' ? 'selected' : ''; ?>>Teacher</option>
                         </select>
                     </div>
                     <div class="col-md-2">
@@ -247,16 +248,14 @@ $stats = $stats_stmt->fetch();
                             <button type="submit" class="btn btn-primary">
                                 <i class="fas fa-search"></i> Search
                             </button>
-                        </div>
-                    </div>
-                    <div class="col-md-2">
-                        <label class="form-label">&nbsp;</label>
-                        <div>
+                            
                             <a href="users.php" class="btn btn-secondary">
                                 <i class="fas fa-times"></i> Clear
                             </a>
+                    
                         </div>
                     </div>
+                    
                 </form>
             </div>
 
@@ -379,6 +378,7 @@ $stats = $stats_stmt->fetch();
                         <select class="form-select" name="role" required>
                             <option value="parent">Parent</option>
                             <option value="admin">Admin</option>
+                            <option value="teacher">Teacher</option>
                         </select>
                     </div>
                     <div class="mb-3">
