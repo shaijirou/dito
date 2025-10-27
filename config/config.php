@@ -12,9 +12,7 @@ define('SITE_URL', 'http://localhost/child_tracking');
 define('UPLOAD_PATH', 'uploads/');
 define('MAX_FILE_SIZE', 5242880); // 5MB
 
-define('SMS_API_URL', 'https://api.semaphore.co/api/v4/messages');
-define('SMS_API_KEY', 'f17b086e3d1e0a96cfb1a922f62dc33d'); // Get from https://semaphore.co
-define('SMS_SENDER_ID', 'SNIHS');
+
 
 // Security settings
 define('SESSION_TIMEOUT', 3600); // 1 hour
