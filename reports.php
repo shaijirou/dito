@@ -58,239 +58,151 @@ try {
 
 <?php include 'includes/header.php'; ?>
 
-<div class="container mt-4">
-    <div class="row">
-        <div class="col-12">
-            <h1><i class="fas fa-chart-bar"></i> System Reports</h1>
-            
-            <?php if ($error): ?>
-                <div class="alert alert-danger alert-dismissible fade show">
-                    <?php echo htmlspecialchars($error); ?>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-            <?php endif; ?>
+<!-- Replaced container-fluid with container and added main-content class for proper centering and margins -->
+<div class="container">
+    <div class="main-content">
+        <h1 style="font-size: 2rem; font-weight: 700; color: #1a1a1a; margin-bottom: 1.5rem;">
+            <i class="fas fa-chart-bar" style="margin-right: 0.5rem;"></i>System Reports
+        </h1>
+        
+        <?php if ($error): ?>
+            <div class="alert alert-danger alert-dismissible fade show">
+                <?php echo htmlspecialchars($error); ?>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        <?php endif; ?>
 
-            <?php if ($success): ?>
-                <div class="alert alert-success alert-dismissible fade show">
-                    <?php echo htmlspecialchars($success); ?>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-            <?php endif; ?>
+        <?php if ($success): ?>
+            <div class="alert alert-success alert-dismissible fade show">
+                <?php echo htmlspecialchars($success); ?>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        <?php endif; ?>
 
-             <!-- Statistics Dashboard  -->
-            <div class="row mb-4">
-                <div class="col-md-3 col-sm-6 mb-3">
-                    <div class="stats-card bg-primary text-white">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <div class="stats-number"><?php echo $stats['active_users'] ?? 0; ?></div>
-                                <div class="stats-label">Active Users</div>
-                            </div>
-                            <div class="stats-icon">
-                                <i class="fas fa-users"></i>
-                            </div>
+        <!-- Updated stat cards row with proper spacing -->
+        <div class="row g-3 mb-5">
+            <div class="col-lg-3 col-md-6 col-sm-6 col-12">
+                <div class="stat-card stat-card-blue">
+                    <div class="stat-header">
+                        <div>
+                            <div class="stat-count"><?php echo $stats['active_users'] ?? 0; ?></div>
+                            <div class="stat-label">Active Users</div>
                         </div>
-                    </div>
-                </div>
-                <div class="col-md-3 col-sm-6 mb-3">
-                    <div class="stats-card bg-success text-white">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <div class="stats-number"><?php echo $stats['active_children'] ?? 0; ?></div>
-                                <div class="stats-label">Active Children</div>
-                            </div>
-                            <div class="stats-icon">
-                                <i class="fas fa-child"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3 col-sm-6 mb-3">
-                    <div class="stats-card bg-warning text-white">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <div class="stats-number"><?php echo $stats['open_cases'] ?? 0; ?></div>
-                                <div class="stats-label">Open Cases</div>
-                            </div>
-                            <div class="stats-icon">
-                                <i class="fas fa-exclamation-triangle"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3 col-sm-6 mb-3">
-                    <div class="stats-card bg-danger text-white">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <div class="stats-number"><?php echo $stats['unread_alerts'] ?? 0; ?></div>
-                                <div class="stats-label">Unread Alerts</div>
-                            </div>
-                            <div class="stats-icon">
-                                <i class="fas fa-bell"></i>
-                            </div>
+                        <div class="stat-icon">
+                            <i class="fas fa-users"></i>
                         </div>
                     </div>
                 </div>
             </div>
-
-             <!-- Charts Row  -->
-            <div class="row mb-4">
-                <div class="col-md-6">
-                    <div class="card">
-                        <div class="card-header">
-                            <h5 class="mb-0">Cases by Status</h5>
+            <div class="col-lg-3 col-md-6 col-sm-6 col-12">
+                <div class="stat-card stat-card-green">
+                    <div class="stat-header">
+                        <div>
+                            <div class="stat-count"><?php echo $stats['active_children'] ?? 0; ?></div>
+                            <div class="stat-label">Active Children</div>
                         </div>
-                        <div class="card-body">
-                            <canvas id="casesChart" width="400" height="200"></canvas>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="card">
-                        <div class="card-header">
-                            <h5 class="mb-0">Users by Role</h5>
-                        </div>
-                        <div class="card-body">
-                            <canvas id="usersChart" width="400" height="200"></canvas>
+                        <div class="stat-icon">
+                            <i class="fas fa-child"></i>
                         </div>
                     </div>
                 </div>
             </div>
-
-             
-
-             <!-- Report Results  -->
-            <?php if (isset($report_data) && !$error): ?>
-            <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0"><?php echo htmlspecialchars($report_title); ?></h5>
-                    <small class="text-muted">
-                        <?php echo date('M j, Y', strtotime($date_from)); ?> - <?php echo date('M j, Y', strtotime($date_to)); ?>
-                        (<?php echo count($report_data); ?> records)
-                    </small>
-                </div>
-                <div class="card-body">
-                    <?php if (empty($report_data)): ?>
-                        <div class="text-center p-4">
-                            <i class="fas fa-chart-line fa-3x text-muted mb-3"></i>
-                            <h4>No Data Found</h4>
-                            <p class="text-muted">No records found for the selected date range and report type.</p>
+            <div class="col-lg-3 col-md-6 col-sm-6 col-12">
+                <div class="stat-card stat-card-yellow">
+                    <div class="stat-header">
+                        <div>
+                            <div class="stat-count"><?php echo $stats['open_cases'] ?? 0; ?></div>
+                            <div class="stat-label">Open Cases</div>
                         </div>
-                    <?php else: ?>
-                        <div class="table-responsive">
-                            <table class="table table-striped">
-                                <thead class="table-dark">
-                                    <tr>
-                                        <?php foreach (array_keys($report_data[0]) as $header): ?>
-                                            <th><?php echo ucwords(str_replace('_', ' ', $header)); ?></th>
-                                        <?php endforeach; ?>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <?php foreach ($report_data as $row): ?>
-                                    <tr>
-                                        <?php foreach ($row as $key => $value): ?>
-                                            <td>
-                                                <?php 
-                                                if (in_array($key, ['created_at', 'created_at', 'timestamp', 'last_login'])) {
-                                                    echo $value ? date('M j, Y g:i A', strtotime($value)) : 'Never';
-                                                }elseif ($key === 'status') {
-                                                    echo $value ? '<span class="badge bg-success">Active</span>' : '<span class="badge bg-danger">Inactive</span>';
-                                                } elseif ($key === 'status') {
-                                                    $badge_class = $value === 'open' ? 'bg-warning' : ($value === 'resolved' ? 'bg-success' : 'bg-secondary');
-                                                    echo '<span class="badge ' . $badge_class . '">' . ucfirst($value) . '</span>';
-                                                } else {
-                                                    echo htmlspecialchars($value);
-                                                }
-                                                ?>
-                                            </td>
-                                        <?php endforeach; ?>
-                                    </tr>
-                                    <?php endforeach; ?>
-                                </tbody>
-                            </table>
-                        </div>
-                    <?php endif; ?>
-                </div>
-            </div>
-            <?php endif; ?>
-
-             <!-- Quick Reports  -->
-            <div class="row mt-4">
-                <div class="col-md-12">
-                    <div class="card">
-                        <div class="card-header">
-                            <h5 class="mb-0">Recent Cases (Last 7 Days)</h5>
-                        </div>
-                        <div class="card-body">
-                            <?php
-                            try {
-                                $stmt = $pdo->query("SELECT mc.*, c.first_name, c.last_name, c.lrn
-                                                   FROM missing_cases mc
-                                                   JOIN children c ON mc.child_id = c.id
-                                                   WHERE mc.created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)
-                                                   ORDER BY mc.created_at DESC
-                                                   LIMIT 5");
-                                $recent_cases = $stmt->fetchAll(PDO::FETCH_ASSOC);
-                            } catch (PDOException $e) {
-                                $recent_cases = [];
-                            }
-                            ?>
-                            
-                            <?php if (empty($recent_cases)): ?>
-                                <p class="text-muted">No recent cases in the last 7 days.</p>
-                            <?php else: ?>
-                                <div class="list-group list-group-flush">
-                                    <?php foreach ($recent_cases as $case): ?>
-                                    <div class="list-group-item d-flex justify-content-between align-items-center">
-                                        <div>
-                                            <strong><?php echo htmlspecialchars($case['first_name'] . ' ' . $case['last_name']); ?></strong>
-                                            <br>
-                                            <small class="text-muted">
-                                                ID: <?php echo htmlspecialchars($case['lrn']); ?> | 
-                                                <?php echo date('M j, g:i A', strtotime($case['created_at'])); ?>
-                                            </small>
-                                        </div>
-                                        <span class="badge bg-<?php echo $case['status'] === 'open' ? 'warning' : 'success'; ?>">
-                                            <?php echo ucfirst($case['status']); ?>
-                                        </span>
-                                    </div>
-                                    <?php endforeach; ?>
-                                </div>
-                            <?php endif; ?>
+                        <div class="stat-icon">
+                            <i class="fas fa-exclamation-triangle"></i>
                         </div>
                     </div>
                 </div>
+            </div>
+            <div class="col-lg-3 col-md-6 col-sm-6 col-12">
+                <div class="stat-card stat-card-red">
+                    <div class="stat-header">
+                        <div>
+                            <div class="stat-count"><?php echo $stats['unread_alerts'] ?? 0; ?></div>
+                            <div class="stat-label">Unread Alerts</div>
+                        </div>
+                        <div class="stat-icon">
+                            <i class="fas fa-bell"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts section -->
+        <div class="row g-3 mb-5">
+            <div class="col-lg-6 col-md-12">
+                <div class="card h-100 shadow-sm" style="border: none; border-radius: 8px;">
+                    <div class="card-header bg-dark text-white" style="border-radius: 8px 8px 0 0; border: none;">
+                        <h5 class="mb-0"><i class="fas fa-pie-chart" style="margin-right: 0.5rem;"></i>Cases by Status</h5>
+                    </div>
+                    <div class="card-body" style="padding: 2rem;">
+                        <canvas id="casesChart" height="200"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6 col-md-12">
+                <div class="card h-100 shadow-sm" style="border: none; border-radius: 8px;">
+                    <div class="card-header bg-dark text-white" style="border-radius: 8px 8px 0 0; border: none;">
+                        <h5 class="mb-0"><i class="fas fa-bar-chart" style="margin-right: 0.5rem;"></i>Users by Role</h5>
+                    </div>
+                    <div class="card-body" style="padding: 2rem;">
+                        <canvas id="usersChart" height="200"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Cases section -->
+        <div class="card shadow-sm" style="border: none; border-radius: 8px;">
+            <div class="card-header bg-dark text-white" style="border-radius: 8px 8px 0 0; border: none;">
+                <h5 class="mb-0"><i class="fas fa-clock" style="margin-right: 0.5rem;"></i>Recent Cases (Last 7 Days)</h5>
+            </div>
+            <div class="card-body">
+                <?php
+                try {
+                    $stmt = $pdo->query("SELECT mc.*, c.first_name, c.last_name, c.lrn
+                                       FROM missing_cases mc
+                                       JOIN children c ON mc.child_id = c.id
+                                       WHERE mc.created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)
+                                       ORDER BY mc.created_at DESC
+                                       LIMIT 5");
+                    $recent_cases = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                } catch (PDOException $e) {
+                    $recent_cases = [];
+                }
+                ?>
                 
-                <!-- <div class="col-md-6">
-                    <div class="card">
-                        <div class="card-header">
-                            <h5 class="mb-0">System Health</h5>
-                        </div>
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                <span>Database Connection</span>
-                                <span class="badge bg-success">Online</span>
-                            </div>
-                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                <span>GPS Tracking</span>
-                                <span class="badge bg-success">Active</span>
-                            </div>
-                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                <span>Email Notifications</span>
-                                <span class="badge bg-success">Working</span>
-                            </div>
-                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                <span>SMS Alerts</span>
-                                <span class="badge bg-warning">Limited</span>
-                            </div>
-                            <div class="d-flex justify-content-between align-items-center">
-                                <span>System Load</span>
-                                <span class="badge bg-info">Normal</span>
-                            </div>
-                        </div>
+                <?php if (empty($recent_cases)): ?>
+                    <div class="text-center py-5">
+                        <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">No recent cases in the last 7 days.</p>
                     </div>
-                </div> -->
+                <?php else: ?>
+                    <div class="list-group list-group-flush">
+                        <?php foreach ($recent_cases as $case): ?>
+                        <div class="list-group-item d-flex justify-content-between align-items-center py-3" style="border-bottom: 1px solid #e0e0e0;">
+                            <div>
+                                <strong style="font-size: 1rem; color: #1a1a1a;"><?php echo htmlspecialchars($case['first_name'] . ' ' . $case['last_name']); ?></strong>
+                                <br>
+                                <small class="text-muted">
+                                    ID: <?php echo htmlspecialchars($case['lrn']); ?> | 
+                                    <?php echo date('M j, g:i A', strtotime($case['created_at'])); ?>
+                                </small>
+                            </div>
+                            <span class="badge bg-<?php echo $case['status'] === 'open' ? 'warning' : 'success'; ?>" style="font-size: 0.85rem; padding: 0.5rem 0.75rem;">
+                                <?php echo ucfirst($case['status']); ?>
+                            </span>
+                        </div>
+                        <?php endforeach; ?>
+                    </div>
+                <?php endif; ?>
             </div>
         </div>
     </div>
@@ -309,15 +221,22 @@ new Chart(casesCtx, {
         datasets: [{
             data: casesData.map(item => item.count),
             backgroundColor: ['#ffc107', '#28a745', '#6c757d', '#dc3545'],
+            borderColor: '#fff',
             borderWidth: 2
         }]
     },
     options: {
         responsive: true,
-        maintainAspectRatio: false,
+        maintainAspectRatio: true,
         plugins: {
             legend: {
-                position: 'bottom'
+                position: 'bottom',
+                labels: {
+                    padding: 15,
+                    font: {
+                        size: 12
+                    }
+                }
             }
         }
     }
@@ -333,18 +252,28 @@ new Chart(usersCtx, {
         datasets: [{
             label: 'Number of Users',
             data: usersData.map(item => item.count),
-            backgroundColor: ['#007bff', '#28a745', '#ffc107', '#dc3545'],
-            borderWidth: 1
+            backgroundColor: ['#007bff', '#28a745', '#ffc107'],
+            borderRadius: 4,
+            borderSkipped: false
         }]
     },
     options: {
         responsive: true,
-        maintainAspectRatio: false,
+        maintainAspectRatio: true,
+        indexAxis: 'x',
         scales: {
             y: {
                 beginAtZero: true,
                 ticks: {
                     stepSize: 1
+                },
+                grid: {
+                    color: '#e0e0e0'
+                }
+            },
+            x: {
+                grid: {
+                    display: false
                 }
             }
         },

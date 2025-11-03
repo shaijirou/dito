@@ -79,6 +79,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <button type="submit" class="btn btn-primary" style="width: 100%;">Login</button>
             </form>
             
+            <!-- Added forgot password link -->
+            <div class="text-center mt-3">
+                <p><a href="forgot_password.php" class="forgot-link">Forgot Password?</a></p>
+            </div>
+            
             <div class="text-center mt-3">
                 <p>Track your Child? <a href="mobile_tracking.php">Track here</a></p>
                 <p>Don't have an account? <a href="register.php">Register here</a></p>

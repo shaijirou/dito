@@ -98,7 +98,9 @@ try {
         $stmt = $pdo->prepare("SELECT first_name, last_name FROM children WHERE id = ?");
         $stmt->execute([$child_id]);
         $child_info = $stmt->fetch(PDO::FETCH_ASSOC);
-        $alert_message = "GEOFENCE ALERT: {$child_info['first_name']} {$child_info['last_name']} has left the school safe zone.";
+       date_default_timezone_set('Asia/Manila');
+        $alert_message = "GEOFENCE ALERT: {$child_info['first_name']} {$child_info['last_name']} has left the school safe zone at " . date('M d, Y h:i A') . ".";
+
 
         $recipients = [];
         $stmt = $pdo->prepare("SELECT u.id, u.phone, u.full_name FROM users u 

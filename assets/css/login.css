@@ -129,3 +129,20 @@ body::before {
         font-size: 16px;
     }
 }
+
+/* Added forgot password link styling */
+.forgot-link {
+    color: var(--info-600);
+    text-decoration: none;
+    font-weight: 500;
+    transition: color var(--transition-fast), text-decoration var(--transition-fast);
+}
+
+.forgot-link:hover {
+    color: var(--info-700);
+    text-decoration: underline;
+}
+
+.forgot-link:active {
+    color: var(--info-800);
+}

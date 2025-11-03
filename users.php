@@ -3,8 +3,6 @@ require_once 'config/config.php';
 
 requireLogin();
 
-
-
 // Check if user is logged in and is admin
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
     header('Location: login.php');
@@ -101,16 +99,7 @@ $stmt->execute($params);
 $users = $stmt->fetchAll();
 
 // Get user statistics
-$stats_stmt = $pdo->query("
-    SELECT 
-        COUNT(*) as total_users,
-        SUM(CASE WHEN role = 'parent' THEN 1 ELSE 0 END) as total_parents,
-        SUM(CASE WHEN role = 'teacher' THEN 1 ELSE 0 END) as total_teachers,
-        SUM(CASE WHEN role = 'admin' THEN 1 ELSE 0 END) as total_admins,
-        SUM(CASE WHEN status = 1 THEN 1 ELSE 0 END) as active_users,
-        SUM(CASE WHEN created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY) THEN 1 ELSE 0 END) as new_users_30d
-    FROM users
-");
+$stats_stmt = $pdo->query("SELECT COUNT(*) as total_users, SUM(CASE WHEN role = 'parent' THEN 1 ELSE 0 END) as total_parents, SUM(CASE WHEN role = 'teacher' THEN 1 ELSE 0 END) as total_teachers, SUM(CASE WHEN role = 'admin' THEN 1 ELSE 0 END) as total_admins, SUM(CASE WHEN status = 1 THEN 1 ELSE 0 END) as active_users, SUM(CASE WHEN created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY) THEN 1 ELSE 0 END) as new_users_30d FROM users");
 $stats = $stats_stmt->fetch();
 ?>
 
@@ -123,231 +112,589 @@ $stats = $stats_stmt->fetch();
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="assets/css/main.css" rel="stylesheet">
+    <style>
+        /* Modern users page styling */
+        .users-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .users-header h1 {
+            font-size: clamp(1.5rem, 5vw, 2rem);
+            color: var(--gray-900);
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .add-user-btn {
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        /* Stats Grid - Modern Card Design */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        @media (max-width: 640px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 0.75rem;
+            }
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--gray-200);
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+            border-color: var(--gray-300);
+        }
+
+        .stat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+
+        .stat-count {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--gray-900);
+            line-height: 1;
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: var(--gray-600);
+            margin-top: 0.5rem;
+            font-weight: 500;
+        }
+
+        .stat-icon {
+            font-size: 2rem;
+            opacity: 0.2;
+            flex-shrink: 0;
+        }
+
+        .stat-card-blue { border-left: 4px solid #3b82f6; }
+        .stat-card-green { border-left: 4px solid #10b981; }
+        .stat-card-yellow { border-left: 4px solid #f59e0b; }
+
+        /* Search Card */
+        .search-card {
+            background: white;
+            border-radius: 12px;
+            border: 1px solid var(--gray-200);
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .search-card .card-body {
+            padding: 1.5rem;
+        }
+
+        .search-card .card-title {
+            font-size: 0.95rem;
+            color: var(--gray-900);
+            font-weight: 600;
+        }
+
+        .search-form {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            align-items: flex-end;
+        }
+
+        @media (max-width: 768px) {
+            .search-form {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .search-buttons {
+            display: flex;
+            gap: 0.5rem;
+            width: 100%;
+        }
+
+        .search-buttons .btn {
+            flex: 1;
+        }
+
+        /* Table Container */
+        .table-card {
+            background: white;
+            border-radius: 12px;
+            border: 1px solid var(--gray-200);
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .table-card .card-header {
+            background: linear-gradient(135deg, var(--gray-900) 0%, var(--gray-800) 100%);
+            border: none;
+            padding: 1.5rem;
+        }
+
+        .table-card .card-header h5 {
+            font-size: 1rem;
+            margin: 0;
+            font-weight: 600;
+        }
+
+        /* Modern Table Styling */
+        .table {
+            margin-bottom: 0;
+            font-size: 0.95rem;
+        }
+
+        .table thead {
+            background: var(--gray-100);
+        }
+
+        .table thead th {
+            background: var(--gray-100);
+            border-bottom: 2px solid var(--gray-200);
+            color: var(--gray-900);
+            font-weight: 600;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 1rem;
+        }
+
+        .table tbody td {
+            padding: 1rem;
+            vertical-align: middle;
+            border-bottom: 1px solid var(--gray-200);
+        }
+
+        .table tbody tr {
+            transition: background-color 0.2s ease;
+        }
+
+        .table tbody tr:hover {
+            background-color: var(--gray-50);
+        }
+
+        /* Action Buttons */
+        .action-buttons {
+            display: flex;
+            flex-direction: row;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .action-buttons .btn {
+            padding: 0.375rem 0.75rem;
+            font-size: 0.875rem;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+        }
+
+        .action-buttons .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Badges */
+        .badge {
+            padding: 0.375rem 0.75rem;
+            font-weight: 500;
+            font-size: 0.75rem;
+            border-radius: 6px;
+            text-transform: capitalize;
+        }
+
+        /* Pagination */
+        .pagination {
+            margin-top: 2rem;
+        }
+
+        .page-link {
+            border-radius: 6px;
+            margin: 0 0.25rem;
+            border: 1px solid var(--gray-300);
+            color: var(--gray-900);
+            transition: all 0.2s ease;
+        }
+
+        .page-link:hover {
+            background-color: var(--gray-100);
+            border-color: var(--gray-400);
+        }
+
+        .page-item.active .page-link {
+            background-color: var(--gray-900);
+            border-color: var(--gray-900);
+        }
+
+        /* Modal */
+        .modal-content {
+            border-radius: 12px;
+            border: 1px solid var(--gray-200);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, var(--gray-900) 0%, var(--gray-800) 100%);
+            color: white;
+            border: none;
+            padding: 1.5rem;
+        }
+
+        .modal-header .btn-close {
+            filter: brightness(0) invert(1);
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: var(--gray-900);
+            margin-bottom: 0.5rem;
+            font-size: 0.95rem;
+        }
+
+        .form-control, .form-select {
+            border: 1px solid var(--gray-300);
+            border-radius: 8px;
+            padding: 0.625rem 1rem;
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: var(--gray-900);
+            box-shadow: 0 0 0 3px rgba(17, 24, 39, 0.1);
+        }
+
+        /* Mobile Table Display */
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .search-form {
+                grid-template-columns: 1fr;
+            }
+
+            .table {
+                font-size: 0.85rem;
+            }
+
+            .table thead {
+                display: none;
+            }
+
+            .table tbody tr {
+                display: block;
+                margin-bottom: 1rem;
+                border: 1px solid var(--gray-200);
+                border-radius: 8px;
+                background: white;
+                overflow: hidden;
+            }
+
+            .table tbody td {
+                display: flex;
+                justify-content: space-between;
+                padding: 0.75rem;
+                border: none;
+                border-bottom: 1px solid var(--gray-200);
+            }
+
+            .table tbody td::before {
+                content: attr(data-label);
+                font-weight: 600;
+                color: var(--gray-900);
+                min-width: 80px;
+            }
+
+            .table tbody td:last-child {
+                border-bottom: none;
+            }
+
+            .action-buttons {
+                 display: flex;
+        flex-direction: row;
+        justify-content: center;
+        gap: 0.5rem;
+        flex-wrap: nowrap;
+            }
+
+            .action-buttons .btn {
+             width: auto; /* fix: prevents full width stacking */
+        flex: 0 0 auto;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .users-header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .add-user-btn {
+                width: 100%;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .table tbody td {
+                padding: 0.5rem;
+                font-size: 0.8rem;
+            }
+
+            .stat-count {
+                font-size: 1.5rem;
+            }
+
+            .stat-icon {
+                font-size: 1.5rem;
+            }
+        }
+
+        /* Alert Styling */
+        .alert {
+            border-radius: 8px;
+            border: 1px solid;
+            padding: 1rem;
+        }
+
+        .alert-success {
+            background-color: var(--success-50);
+            border-color: var(--success-200);
+            color: var(--success-800);
+        }
+
+        .alert-danger {
+            background-color: var(--danger-50);
+            border-color: var(--danger-200);
+            color: var(--danger-800);
+        }
+    </style>
 </head>
 <body>
 
 <?php include 'includes/header.php'; ?>
 
-<div class="container mt-4">
-    <div class="row">
-        <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h1><i class="fas fa-users"></i> User Management</h1>
-                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addUserModal">
-                    <i class="fas fa-plus"></i> Add New User
-                </button>
+<div class="main-content">
+    <div class="container">
+        <div class="users-header">
+            <h1><i class="fas fa-users"></i> User Management</h1>
+            <button class="btn btn-dark add-user-btn" data-bs-toggle="modal" data-bs-target="#addUserModal">
+                <i class="fas fa-plus"></i> Add New User
+            </button>
+        </div>
+
+        <?php if (isset($success_message)): ?>
+            <div class="alert alert-success alert-dismissible fade show">
+                <i class="fas fa-check-circle me-2"></i>
+                <?php echo htmlspecialchars($success_message); ?>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        <?php endif; ?>
+
+        <?php if (isset($error_message)): ?>
+            <div class="alert alert-danger alert-dismissible fade show">
+                <i class="fas fa-exclamation-circle me-2"></i>
+                <?php echo htmlspecialchars($error_message); ?>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        <?php endif; ?>
+
+        <div class="stats-grid">
+            <div class="stat-card stat-card-blue">
+                <div class="stat-header">
+                    <div>
+                        <div class="stat-count"><?php echo $stats['total_users']; ?></div>
+                        <div class="stat-label">Total Users</div>
+                    </div>
+                    <div class="stat-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                </div>
             </div>
 
-            <?php if (isset($success_message)): ?>
-                <div class="alert alert-success alert-dismissible fade show">
-                    <?php echo htmlspecialchars($success_message); ?>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-            <?php endif; ?>
-
-            <?php if (isset($error_message)): ?>
-                <div class="alert alert-danger alert-dismissible fade show">
-                    <?php echo htmlspecialchars($error_message); ?>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-            <?php endif; ?>
-
-            <!-- Statistics Cards -->
-            <div class="row stats-row">
-                <div class="col stats-card bg-primary">
-                    <div class="stats-content">
-                        <div>
-                            <div class="stats-number"><?php echo $stats['total_users']; ?></div>
-                            <div class="stats-label">Total Users</div>
-                        </div>
-                        <div class="stats-icon">
-                            <i class="fas fa-users"></i>
-                        </div>
+            <div class="stat-card stat-card-green">
+                <div class="stat-header">
+                    <div>
+                        <div class="stat-count"><?php echo $stats['total_parents']; ?></div>
+                        <div class="stat-label">Parents</div>
+                    </div>
+                    <div class="stat-icon">
+                        <i class="fas fa-user-friends"></i>
                     </div>
                 </div>
-
-                <div class="col stats-card bg-success">
-                    <div class="stats-content">
-                        <div>
-                            <div class="stats-number"><?php echo $stats['total_parents']; ?></div>
-                            <div class="stats-label">Parents</div>
-                        </div>
-                        <div class="stats-icon">
-                            <i class="fas fa-user-friends"></i>
-                        </div>
+            </div>
+            
+            <div class="stat-card" style="border-left: 4px solid #6b7280;">
+                <div class="stat-header">
+                    <div>
+                        <div class="stat-count"><?php echo $stats['total_teachers']; ?></div>
+                        <div class="stat-label">Teachers</div>
+                    </div>
+                    <div class="stat-icon">
+                        <i class="fas fa-chalkboard-user"></i>
                     </div>
                 </div>
-                
-                <div class="col stats-card bg-secondary">
-                    <div class="stats-content">
-                        <div>
-                            <div class="stats-number"><?php echo $stats['total_teachers']; ?></div>
-                            <div class="stats-label">Total Teachers</div>
-                        </div>
-                        <div class="stats-icon">
-                            <i class="fas fa-user-plus"></i>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col stats-card bg-warning">
-                    <div class="stats-content">
-                        <div>
-                            <div class="stats-number"><?php echo $stats['total_admins']; ?></div>
-                            <div class="stats-label">Admins</div>
-                        </div>
-                        <div class="stats-icon">
-                            <i class="fas fa-user-shield"></i>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col stats-card bg-info">
-                    <div class="stats-content">
-                        <div>
-                            <div class="stats-number"><?php echo $stats['active_users']; ?></div>
-                            <div class="stats-label">Active Users</div>
-                        </div>
-                        <div class="stats-icon">
-                            <i class="fas fa-user-check"></i>
-                        </div>
-                    </div>
-                </div>
-
-                
             </div>
 
+            <div class="stat-card stat-card-yellow">
+                <div class="stat-header">
+                    <div>
+                        <div class="stat-count"><?php echo $stats['total_admins']; ?></div>
+                        <div class="stat-label">Admins</div>
+                    </div>
+                    <div class="stat-icon">
+                        <i class="fas fa-user-shield"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-            <!-- Search and Filter -->
-            <div class="filter-section mb-4">
-                <form method="GET" class="row g-3">
-                    <div class="col-md-4">
-                        <label class="form-label">Search Users</label>
+        <div class="search-card">
+            <div class="card-body">
+                <h6 class="card-title"><i class="fas fa-search me-2"></i>Search Users</h6>
+                <form method="GET" class="search-form">
+                    <div>
                         <input type="text" class="form-control" name="search" value="<?php echo htmlspecialchars($search); ?>" placeholder="Username, email, or name...">
                     </div>
-                    <div class="col-md-2">
-                        <label class="form-label">Role</label>
+                    <div>
                         <select class="form-select" name="role">
                             <option value="">All Roles</option>
-                            <!-- <option value="admin" <?php echo $role_filter === 'admin' ? 'selected' : ''; ?>>Admin</option> -->
                             <option value="parent" <?php echo $role_filter === 'parent' ? 'selected' : ''; ?>>Parent</option>
                             <option value="teacher" <?php echo $role_filter === 'teacher' ? 'selected' : ''; ?>>Teacher</option>
                         </select>
                     </div>
-                    <div class="col-md-2">
-                        <label class="form-label">Status</label>
+                    <div>
                         <select class="form-select" name="status">
                             <option value="">All Status</option>
                             <option value="1" <?php echo $status_filter === '1' ? 'selected' : ''; ?>>Active</option>
                             <option value="0" <?php echo $status_filter === '0' ? 'selected' : ''; ?>>Inactive</option>
                         </select>
                     </div>
-                    <div class="col-md-2">
-                        <label class="form-label">&nbsp;</label>
-                        <div>
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-search"></i> Search
-                            </button>
-                            
-                            <a href="users.php" class="btn btn-secondary">
-                                <i class="fas fa-times"></i> Clear
-                            </a>
-                    
-                        </div>
+                    <div class="search-buttons">
+                        <button type="submit" class="btn btn-dark">
+                            <i class="fas fa-search"></i> Search
+                        </button>
+                        <a href="users.php" class="btn btn-outline-secondary">
+                            <i class="fas fa-times"></i> Clear
+                        </a>
                     </div>
-                    
                 </form>
             </div>
-
-            <!-- Users Table -->
-            <div class="admin-table">
-                <div class="card-header">
-                    <h5 class="mb-0">Users (<?php echo $total_users; ?> total)</h5>
-                </div>
-                <div class="table-responsive">
-                    <table class="table table-striped mb-0">
-                        <thead class="table-dark ">
-                            <tr >
-                                <th class="text-center text-white">ID</th>
-                                <th class="text-center text-white">Username</th>
-                                <th class="text-center text-white">Full Name</th>
-                                <th class="text-center text-white">Email</th>
-                                <th class="text-center text-white">Phone</th>
-                                <th class="text-center text-white">Role</th>
-                                <th class="text-center text-white">Status</th>
-                                <th class="text-center text-white">Created</th>
-                                <th class="text-center text-white">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php foreach ($users as $user): ?>
-                            <tr>
-                                <td><?php echo $user['id']; ?></td>
-                                <td>
-                                    <strong><?php echo htmlspecialchars($user['username']); ?></strong>
-                                </td>
-                                <td><?php echo htmlspecialchars($user['full_name']); ?></td>
-                                <td><?php echo htmlspecialchars($user['email']); ?></td>
-                                <td><?php echo htmlspecialchars($user['phone']); ?></td>
-                                <td>
-                                    <span class="badge <?php echo $user['role'] === 'admin' ? 'bg-danger' : 'bg-primary'; ?>">
-                                        <?php echo ucfirst($user['role']); ?>
-                                    </span>
-                                </td>
-                                <td>
-                                    <span class="badge <?php echo $user['status'] ? 'bg-success' : 'bg-secondary'; ?>">
-                                        <?php echo $user['status'] ? 'Active' : 'Inactive'; ?>
-                                    </span>
-                                </td>
-                                <td><?php echo $user['formatted_created_at']; ?></td>
-                                <td>
-                                    <div class="action-buttons">
-                                        <?php if ($user['role'] !== 'admin' || $_SESSION['user_id'] != $user['id']): ?>
-                                            <button class="btn btn-outline-primary btn-sm" onclick="editUser(<?php echo $user['id']; ?>, '<?php echo htmlspecialchars($user['role']); ?>')">
-                                                <i class="fas fa-edit"></i>
-                                            </button>
-                                            <button class="btn btn-outline-warning btn-sm" onclick="toggleUserStatus(<?php echo $user['id']; ?>)">
-                                                <i class="fas fa-<?php echo $user['status'] ? 'ban' : 'check'; ?>"></i>
-                                            </button>
-                                            <button class="btn btn-outline-danger btn-sm" onclick="deleteUser(<?php echo $user['id']; ?>, '<?php echo htmlspecialchars($user['username']); ?>')">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                        <?php else: ?>
-                                            <span class="text-muted">Current Admin</span>
-                                        <?php endif; ?>
-                                    </div>
-                                </td>
-                            </tr>
-                            <?php endforeach; ?>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <!-- Pagination -->
-            <?php if ($total_pages > 1): ?>
-            <nav class="mt-4">
-                <ul class="pagination justify-content-center">
-                    <?php for ($i = 1; $i <= $total_pages; $i++): ?>
-                        <li class="page-item <?php echo $i === $page ? 'active' : ''; ?>">
-                            <a class="page-link" href="?page=<?php echo $i; ?>&search=<?php echo urlencode($search); ?>&role=<?php echo urlencode($role_filter); ?>&status=<?php echo urlencode($status_filter); ?>">
-                                <?php echo $i; ?>
-                            </a>
-                        </li>
-                    <?php endfor; ?>
-                </ul>
-            </nav>
-            <?php endif; ?>
         </div>
+
+        <div class="table-card">
+            <div class="card-header">
+                <h5><i class="fas fa-table me-2"></i>Users (<?php echo $total_users; ?> total)</h5>
+            </div>
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Username</th>
+                            <th>Full Name</th>
+                            <th>Email</th>
+                            <th>Phone</th>
+                            <th>Role</th>
+                            <th>Status</th>
+                            <th>Created</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($users as $user): ?>
+                        <tr>
+                            <td data-label="ID"><?php echo $user['id']; ?></td>
+                            <td data-label="Username">
+                                <strong><?php echo htmlspecialchars($user['username']); ?></strong>
+                            </td>
+                            <td data-label="Full Name"><?php echo htmlspecialchars($user['full_name']); ?></td>
+                            <td data-label="Email"><?php echo htmlspecialchars($user['email']); ?></td>
+                            <td data-label="Phone"><?php echo htmlspecialchars($user['phone']); ?></td>
+                            <td data-label="Role">
+                                <span class="badge <?php echo $user['role'] === 'admin' ? 'bg-danger' : ($user['role'] === 'teacher' ? 'bg-primary' : 'bg-secondary'); ?>">
+                                    <?php echo ucfirst($user['role']); ?>
+                                </span>
+                            </td>
+                            <td data-label="Status">
+                                <span class="badge <?php echo $user['status'] ? 'bg-success' : 'bg-secondary'; ?>">
+                                    <?php echo $user['status'] ? 'Active' : 'Inactive'; ?>
+                                </span>
+                            </td>
+                            <td data-label="Created"><?php echo $user['formatted_created_at']; ?></td>
+                            <td data-label="Actions">
+                                <div class="action-buttons">
+                                    <?php if ($user['role'] !== 'admin' || $_SESSION['user_id'] != $user['id']): ?>
+                                        <button class="btn btn-outline-primary btn-sm" onclick="editUser(<?php echo $user['id']; ?>, '<?php echo htmlspecialchars($user['role']); ?>')" title="Edit user">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn btn-outline-warning btn-sm" onclick="toggleUserStatus(<?php echo $user['id']; ?>)" title="Toggle status">
+                                            <i class="fas fa-<?php echo $user['status'] ? 'ban' : 'check'; ?>"></i>
+                                        </button>
+                                        <button class="btn btn-outline-danger btn-sm" onclick="deleteUser(<?php echo $user['id']; ?>, '<?php echo htmlspecialchars($user['username']); ?>')" title="Delete user">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    <?php else: ?>
+                                        <span class="text-muted small">Current Admin</span>
+                                    <?php endif; ?>
+                                </div>
+                            </td>
+                        </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <?php if ($total_pages > 1): ?>
+        <nav class="mt-4">
+            <ul class="pagination justify-content-center">
+                <?php for ($i = 1; $i <= $total_pages; $i++): ?>
+                    <li class="page-item <?php echo $i === $page ? 'active' : ''; ?>">
+                        <a class="page-link" href="?page=<?php echo $i; ?>&search=<?php echo urlencode($search); ?>&role=<?php echo urlencode($role_filter); ?>&status=<?php echo urlencode($status_filter); ?>">
+                            <?php echo $i; ?>
+                        </a>
+                    </li>
+                <?php endfor; ?>
+            </ul>
+        </nav>
+        <?php endif; ?>
     </div>
 </div>
 
-<!-- Add User Modal -->
 <div class="modal fade" id="addUserModal" tabindex="-1">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Add New User</h5>
+                <h5 class="modal-title"><i class="fas fa-user-plus me-2"></i>Add New User</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <form method="POST">
@@ -396,8 +743,6 @@ $stats = $stats_stmt->fetch();
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
 <script>
 function deleteUser(userId, username) {
     if (confirm(`Are you sure you want to delete user "${username}"? This action cannot be undone.`)) {
@@ -425,7 +770,7 @@ function toggleUserStatus(userId) {
 
 function editUser(userId, currentRole) {
     const newRole = prompt(`Change role for user ID ${userId}:`, currentRole);
-    if (newRole && (newRole === 'admin' || newRole === 'parent')) {
+    if (newRole && (newRole === 'admin' || newRole === 'parent' || newRole === 'teacher')) {
         const form = document.createElement('form');
         form.method = 'POST';
         form.innerHTML = `

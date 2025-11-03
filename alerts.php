@@ -154,8 +154,8 @@ if (isset($_POST['mark_read'])) {
                                 
                                 <div class="alert-info-row">
                                     <small>
-                                        <strong>SMS:</strong> <?php echo $alert['sms_sent'] ? 'Sent' : 'Not Sent'; ?> | 
-                                        <strong>Email:</strong> <?php echo $alert['email_sent'] ? 'Sent' : 'Not Sent'; ?> | 
+                                        <!-- <strong>SMS:</strong> <?php echo $alert['sms_sent'] ? 'Sent' : 'Not Sent'; ?> | 
+                                        <strong>Email:</strong> <?php echo $alert['email_sent'] ? 'Sent' : 'Not Sent'; ?> |  -->
                                         <strong>Status:</strong> <?php echo ucfirst($alert['status']); ?>
                                     </small>
                                 </div>
