@@ -115,6 +115,62 @@ if (!empty($search)) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Children Management - Child Tracking System</title>
     <link rel="stylesheet" href="assets/css/main.css">
+    <style>/* Add icon/text button toggle styles for mobile responsiveness */
+/* Add icon/text button toggle styles for mobile responsiveness */
+.action-buttons {
+  display: flex;
+  flex-direction: row;
+  gap: 4px;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+.action-buttons .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  padding: var(--space-1) var(--space-2);
+  font-size: var(--text-xs);
+  min-width: auto;
+  min-height: 32px;
+}
+
+.btn-text {
+  display: inline;
+}
+
+.btn-icon {
+  display: none;
+}
+
+/* Mobile view: Icon only (max-width: 768px) */
+@media (max-width: 768px) {
+  .action-buttons {
+    gap: 6px;
+  }
+
+  .action-buttons .btn {
+    width: auto;
+    min-width: 44px;
+    padding: 8px 8px;
+  }
+
+  .btn-text {
+    display: none;
+  }
+
+  .btn-icon {
+    display: inline;
+    font-size: 18px;
+  }
+
+  .btn-sm .btn-icon {
+    font-size: 16px;
+  }
+}
+</style>
 </head>
 <body>
     <?php include 'includes/header.php'; ?>
@@ -203,16 +259,27 @@ if (!empty($search)) {
                                             <span class="badge badge-success">None</span>
                                         <?php endif; ?>
                                     </td>
-                                    <td data-label="Actions">
+                                      <td data-label="Actions">
                                         <div class="action-buttons">
+                                            <a href="child_profile.php?id=<?php echo $child['id']; ?>" class="btn btn-primary btn-sm" title="View Profile">
+                                                <span class="btn-icon">👁️</span>
+                                                <span class="btn-text">View</span>
+                                            </a>
 
-                                            <a href="child_profile.php?id=<?php echo $child['id']; ?>" class="btn btn-lg btn-primary btn-icon fs-4" title="View Profile">👁️</a>
-
-                                            <a href="track_child.php?id=<?php echo $child['id']; ?>" class="btn btn-lg btn-success btn-icon fs-4" title="Track Child">📍</a>
+                                            <a href="track_child.php?id=<?php echo $child['id']; ?>" class="btn btn-success btn-sm" title="Track Child">
+                                                <span class="btn-icon">📍</span>
+                                                <span class="btn-text">Track</span>
+                                            </a>
 
                                             <?php if ($_SESSION['role'] === 'admin'): ?>
-                                                <a href="edit_child.php?id=<?php echo $child['id']; ?>" class="btn btn-lg btn-warning btn-icon fs-4" title="Edit Child">✏️</a>
-                                                <a href="?delete=<?php echo $child['id']; ?>" class="btn btn-lg btn-danger btn-icon fs-4" onclick="return confirm('Are you sure you want to deactivate this child record?')" title="Delete Child">🗑️</a>
+                                                <a href="edit_child.php?id=<?php echo $child['id']; ?>" class="btn btn-warning btn-sm" title="Edit Child">
+                                                    <span class="btn-icon">✏️</span>
+                                                    <span class="btn-text">Edit</span>
+                                                </a>
+                                                <a href="?delete=<?php echo $child['id']; ?>" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to deactivate this child record?')" title="Delete Child">
+                                                    <span class="btn-icon">🗑️</span>
+                                                    <span class="btn-text">Delete</span>
+                                                </a>
                                             <?php endif; ?>
                                         </div>
                                     </td>

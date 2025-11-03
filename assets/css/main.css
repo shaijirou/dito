@@ -365,7 +365,7 @@ section,
   gap: var(--space-3);
   order: 3;
   margin-left: auto;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   justify-content: flex-end;
 }
 

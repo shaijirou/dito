@@ -69,12 +69,10 @@ try {
                 </ul>
             </nav>
             
-            <!-- Modernized user info section with better layout -->
+            <!-- Moved user-name and role badge together with logout button -->
             <div class="user-info">
-                <div class="user-details">
-                    <span class="user-name"><?php echo htmlspecialchars($_SESSION['full_name']); ?></span>
-                    <span class="badge badge-info"><?php echo ucfirst($_SESSION['role']); ?></span>
-                </div>
+                <span class="user-name"><?php echo htmlspecialchars($_SESSION['full_name']); ?></span>
+                <span class="badge badge-info"><?php echo ucfirst($_SESSION['role']); ?></span>
                 <a href="logout.php" class="btn btn-sm btn-secondary">Logout</a>
             </div>
         </div>
