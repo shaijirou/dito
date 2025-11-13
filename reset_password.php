@@ -11,6 +11,11 @@ if (!isset($_SESSION['reset_token']) || !isset($_SESSION['reset_user_id'])) {
     exit();
 }
 
+if (!isset($_SESSION['reset_verified']) || !isset($_SESSION['reset_user_id'])) {
+    header('Location: forgot_password.php');
+    exit();
+}
+
 $step = isset($_SESSION['reset_verified']) ? 'password' : 'code';
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
@@ -66,9 +71,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 $stmt = $pdo->prepare("UPDATE users SET password = ? WHERE id = ?");
                 $stmt->execute([$hashed_password, $_SESSION['reset_user_id']]);
                 
-                // Clear reset session
+                // Clear session variables
                 unset($_SESSION['reset_token']);
-                unset($_SESSION['reset_email']);
+                unset($_SESSION['reset_phone']);
                 unset($_SESSION['reset_user_id']);
                 unset($_SESSION['reset_verified']);
                 

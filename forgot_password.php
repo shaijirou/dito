@@ -3,65 +3,60 @@ require_once 'config/config.php';
 
 $error = '';
 $success = '';
-$step = isset($_POST['step']) ? $_POST['step'] : 'email';
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    if ($step === 'email' && isset($_POST['email'])) {
-        $email = sanitizeInput($_POST['email']);
-        
-        if (empty($email)) {
-            $error = 'Please enter your email address.';
-        } else {
-            try {
-                // Check if user exists
-                $stmt = $pdo->prepare("SELECT id, email, phone, full_name FROM users WHERE email = ? OR username = ?");
-                $stmt->execute([$email, $email]);
-                $user = $stmt->fetch(PDO::FETCH_ASSOC);
+    $phone = sanitizeInput($_POST['phone']);
+    
+    if (empty($phone)) {
+        $error = 'Please enter your phone number.';
+    } else {
+        try {
+            $normalized_phone = normalizePhoneNumber($phone);
+            
+            // Search by both original and normalized formats for flexibility
+            $stmt = $pdo->prepare("SELECT id, email, phone, full_name FROM users WHERE phone = ? OR phone = ? OR phone LIKE ?");
+            $stmt->execute([$phone, $normalized_phone, '%' . substr($normalized_phone, -10)]);
+            $user = $stmt->fetch(PDO::FETCH_ASSOC);
+            
+            if (!$user) {
+                $error = 'No account found with this phone number.';
+            } else {
+                $phone_number = trim($user['phone']);
+                $phone_number = normalizePhoneNumber($phone_number);
                 
-                if (!$user) {
-                    $error = 'No account found with this email.';
-                } elseif (empty($user['phone'])) {
-                    $error = 'Your account does not have a phone number registered. Please contact the administrator.';
+                if (strlen($phone_number) < 10) {
+                    $error = 'Invalid phone number format. Please contact the administrator.';
                 } else {
-                    $phone = trim($user['phone']);
-                    // Remove common formatting characters
-                    $phone = preg_replace('/[^0-9+]/', '', $phone);
+                    // Generate reset code (6 digits)
+                    $reset_code = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+                    $reset_token = bin2hex(random_bytes(32));
+                    $expires_at = date('Y-m-d H:i:s', strtotime('+30 minutes'));
                     
-                    // Validate phone number length
-                    if (strlen($phone) < 10) {
-                        $error = 'Invalid phone number format. Please contact the administrator.';
+                    // Save reset token to database
+                    $stmt = $pdo->prepare("
+                        INSERT INTO password_resets (user_id, reset_code, reset_token, expires_at, created_at) 
+                        VALUES (?, ?, ?, ?, NOW())
+                    ");
+                    $stmt->execute([$user['id'], $reset_code, $reset_token, $expires_at]);
+                    
+                    $message = "Your Child Tracking System password reset code is: {$reset_code}. Valid for 30 minutes.";
+                    $sms_sent = sendSMSViaSemaphore($phone_number, $message);
+                    
+                    if ($sms_sent) {
+                        $_SESSION['reset_phone'] = $normalized_phone;
+                        $_SESSION['reset_token'] = $reset_token;
+                        $_SESSION['reset_user_id'] = $user['id'];
+                        header('Location: verify_code.php');
+                        exit();
                     } else {
-                        // Generate reset code (6 digits)
-                        $reset_code = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
-                        $reset_token = bin2hex(random_bytes(32));
-                        $expires_at = date('Y-m-d H:i:s', strtotime('+30 minutes'));
-                        
-                        // Save reset token to database
-                        $stmt = $pdo->prepare("
-                            INSERT INTO password_resets (user_id, reset_code, reset_token, expires_at, created_at) 
-                            VALUES (?, ?, ?, ?, NOW())
-                        ");
-                        $stmt->execute([$user['id'], $reset_code, $reset_token, $expires_at]);
-                        
-                        $message = "Your Child Tracking System password reset code is: {$reset_code}. Valid for 30 minutes.";
-                        $sms_sent = sendSMSViaSemaphore($phone, $message);
-                        
-                        if ($sms_sent) {
-                            $_SESSION['reset_email'] = $email;
-                            $_SESSION['reset_token'] = $reset_token;
-                            $_SESSION['reset_user_id'] = $user['id'];
-                            header('Location: reset_password.php');
-                            exit();
-                        } else {
-                            error_log("[v0] SMS Failed - User: {$user['id']}, Email: {$email}, Phone: {$phone}");
-                            $error = 'Failed to send SMS. Please verify your phone number is correct or contact the administrator.';
-                        }
+                        error_log("[v0] SMS Failed - User: {$user['id']}, Phone: {$phone_number}");
+                        $error = 'Failed to send SMS. Please verify your phone number is correct or contact the administrator.';
                     }
                 }
-            } catch (PDOException $e) {
-                error_log("[v0] Password Reset Error: " . $e->getMessage());
-                $error = 'An error occurred. Please try again.';
             }
+        } catch (PDOException $e) {
+            error_log("[v0] Password Reset Error: " . $e->getMessage());
+            $error = 'An error occurred. Please try again.';
         }
     }
 }
@@ -81,7 +76,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         <div class="login-card">
             <div class="login-header">
                 <h1>Forgot Password?</h1>
-                <p>Enter your email to receive a reset code</p>
+                <p>Enter your phone number to receive a reset code</p>
             </div>
             
             <?php if ($error): ?>
@@ -90,11 +85,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             
             <form method="POST" action="">
                 <div class="form-group">
-                    <label for="email" class="form-label">Email Address or Username</label>
-                    <input type="text" id="email" name="email" class="form-control" required placeholder="Enter your email or username">
+                    <label for="phone" class="form-label">Phone Number</label>
+                    <input type="tel" id="phone" name="phone" class="form-control" required placeholder="09XX-XXX-XXXX or +63XXXXXXXXXX">
                 </div>
                 
-                <input type="hidden" name="step" value="email">
                 <button type="submit" class="btn btn-primary" style="width: 100%;">Send Reset Code</button>
             </form>
             

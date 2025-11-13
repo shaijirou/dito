@@ -99,7 +99,7 @@ try {
         $stmt->execute([$child_id]);
         $child_info = $stmt->fetch(PDO::FETCH_ASSOC);
        date_default_timezone_set('Asia/Manila');
-        $alert_message = "GEOFENCE ALERT: {$child_info['first_name']} {$child_info['last_name']} has left the school safe zone at " . date('M d, Y h:i A') . ".";
+        $alert_message = "GEOFENCE ALERT: {$child_info['first_name']} {$child_info['last_name']} has left the school safe zone at " . date('M d, Y h:i A') . ". The teacher are advised to check on the child immediately. Wait for further instructions.";
 
 
         $recipients = [];

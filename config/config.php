@@ -13,14 +13,13 @@ define('UPLOAD_PATH', 'uploads/');
 define('MAX_FILE_SIZE', 5242880); // 5MB
 
 define('SMS_API_URL', 'https://api.semaphore.co/api/v4/messages');
-define('SMS_API_KEY', 'f17b086e3d1e0a96cfb1a922f62dc33d'); // Get from https://semaphore.co
-define('SMS_SENDER_ID', 'SNIHS');
+define('SMS_API_KEY', '31af174458824edd47f22f7ecdebc89d'); // Get from https://semaphore.co
+define('SMS_SENDER_ID', 'CalumalaApp');
 
 // Security settings
 define('SESSION_TIMEOUT', 3600); // 1 hour
 define('PASSWORD_MIN_LENGTH', 6);
 date_default_timezone_set('Asia/Manila');
-
 
 // Helper functions
 function isLoggedIn() {
@@ -46,6 +45,27 @@ function generateCaseNumber() {
     return 'CASE-' . date('Y') . '-' . str_pad(rand(1, 9999), 4, '0', STR_PAD_LEFT);
 }
 
+function normalizePhoneNumber($phone) {
+    // Remove all non-numeric characters except +
+    $phone = preg_replace('/[^0-9+]/', '', trim($phone));
+    
+    // If it starts with +63, convert to 63format (without +)
+    if (strpos($phone, '+63') === 0) {
+        $phone = '63' . substr($phone, 3);
+    }
+    // If it starts with 09, convert to 63format
+    else if (strpos($phone, '09') === 0) {
+        $phone = '63' . substr($phone, 1);
+    }
+    // If it starts with 63, keep as is
+    else if (strpos($phone, '63') !== 0) {
+        // Assume it's a local number starting with 9, add country code
+        $phone = '63' . $phone;
+    }
+    
+    return $phone;
+}
+
 function sendSMSViaSemaphore($phone, $message) {
     global $pdo;
     
@@ -54,6 +74,9 @@ function sendSMSViaSemaphore($phone, $message) {
             error_log("[SMS] Missing phone or message");
             return false;
         }
+        
+        // Normalize phone number
+        $phone = normalizePhoneNumber($phone);
         
         // Check if sms_logs table exists, if not create it
         try {
@@ -64,12 +87,6 @@ function sendSMSViaSemaphore($phone, $message) {
             error_log("[SMS] sms_logs table error: " . $e->getMessage());
             // Continue without logging if table doesn't exist
             $sms_id = null;
-        }
-        
-        // Format phone number for Semaphore (ensure it starts with country code)
-        $formatted_phone = $phone;
-        if (strpos($phone, '+') === false && strpos($phone, '63') !== 0) {
-            $formatted_phone = '63' . ltrim($phone, '0');
         }
         
         if (empty(SMS_API_KEY) || SMS_API_KEY === 'your_api_key_here') {
@@ -85,7 +102,7 @@ function sendSMSViaSemaphore($phone, $message) {
             CURLOPT_POST => true,
             CURLOPT_POSTFIELDS => http_build_query([
                 'apikey' => SMS_API_KEY,
-                'number' => $formatted_phone,
+                'number' => $phone,
                 'message' => $message,
                 'sendername' => SMS_SENDER_ID
             ]),
@@ -114,29 +131,28 @@ function sendSMSViaSemaphore($phone, $message) {
                 $stmt = $pdo->prepare("UPDATE sms_logs SET status = 'sent', sent_at = NOW(), response = ? WHERE id = ?");
                 $stmt->execute([json_encode($response_data), $sms_id]);
             }
-            error_log("[SMS] Successfully sent to $formatted_phone via Semaphore");
+            error_log("[SMS] Successfully sent to $phone via Semaphore");
             return true;
         } else {
             if ($sms_id) {
                 $stmt = $pdo->prepare("UPDATE sms_logs SET status = 'failed', response = ? WHERE id = ?");
                 $stmt->execute([$response, $sms_id]);
             }
-            error_log("[SMS] Failed to send to $formatted_phone. HTTP: $http_code, Response: $response");
+            error_log("[SMS] Failed to send to $phone. HTTP: $http_code, Response: $response");
             return false;
         }
+    } catch (Exception $e) {
+        error_log("[SMS] Exception: " . $e->getMessage());
+        return false;
+    }
+}
 
-            } catch (Exception $e) {
-                error_log("[SMS] Exception: " . $e->getMessage());
-                return false;
-            }
-        }
-
-    // Database connection
-    try {
-        $pdo = new PDO("mysql:host=" . DB_HOST . ";dbname=" . DB_NAME, DB_USER, DB_PASS);
-        $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-        $pdo->exec("set names utf8");
-    } catch(PDOException $e) {
-        die("Database connection failed: " . $e->getMessage());
+// Database connection
+try {
+    $pdo = new PDO("mysql:host=" . DB_HOST . ";dbname=" . DB_NAME, DB_USER, DB_PASS);
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    $pdo->exec("set names utf8");
+} catch(PDOException $e) {
+    die("Database connection failed: " . $e->getMessage());
 }
 ?>
