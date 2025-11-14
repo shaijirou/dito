@@ -10,6 +10,7 @@ if (isset($_POST['update_case'])) {
     $case_id = (int)$_POST['case_id'];
     $new_status = sanitizeInput($_POST['status']);
     $resolution_notes = sanitizeInput($_POST['resolution_notes']);
+    $resolved = date('Y-m-d H:i:s');
     
     try {
         if ($new_status === 'resolved') {
@@ -33,7 +34,7 @@ if (isset($_POST['update_case'])) {
                 $case_details = $stmt->fetch(PDO::FETCH_ASSOC);
                 
                 if ($case_details) {
-                    $alert_message = "CASE RESOLVED: " . $case_details['first_name'] . " " . $case_details['last_name'] . " has been found safe. Case " . $case_details['case_number'] . " is now closed.";
+                    $alert_message = "CASE RESOLVED: " . $case_details['first_name'] . " " . $case_details['last_name'] . " has been found safe. Case " . $case_details['case_number']  . " is now closed. ". date('M d, Y h:i A') ;
                     
                     $stmt = $pdo->prepare("SELECT u.id, u.phone FROM users u 
                                           JOIN parent_child pc ON u.id = pc.parent_id 
@@ -70,7 +71,7 @@ if (isset($_POST['update_case'])) {
 
 // Get cases based on user role
 try {
-    if ($_SESSION['role'] === 'admin' || $_SESSION['role'] === 'teacher') {
+    if ($_SESSION['role'] === 'admin') {
         $stmt = $pdo->query("SELECT mc.*, c.first_name, c.last_name, c.lrn, c.photo,
                             u1.full_name as reported_by_name,
                             u2.full_name as resolved_by_name
@@ -79,6 +80,18 @@ try {
                             JOIN users u1 ON mc.reported_by = u1.id
                             LEFT JOIN users u2 ON mc.resolved_by = u2.id
                             ORDER BY mc.created_at DESC");
+    } elseif ($_SESSION['role'] === 'teacher') {
+        $stmt = $pdo->prepare("SELECT mc.*, c.first_name, c.last_name, c.lrn, c.photo,
+                              u1.full_name as reported_by_name,
+                              u2.full_name as resolved_by_name
+                              FROM missing_cases mc 
+                              JOIN children c ON mc.child_id = c.id 
+                              JOIN teacher_child tc ON c.id = tc.child_id
+                              JOIN users u1 ON mc.reported_by = u1.id
+                              LEFT JOIN users u2 ON mc.resolved_by = u2.id
+                              WHERE tc.teacher_id = ?
+                              ORDER BY mc.created_at DESC");
+        $stmt->execute([$_SESSION['user_id']]);
     } else {
         // Parents see only cases for their children
         $stmt = $pdo->prepare("SELECT mc.*, c.first_name, c.last_name, c.lrn, c.photo,
@@ -209,7 +222,14 @@ try {
                                     </span>
                                 </td>
                                 <td><?php echo htmlspecialchars($case['reported_by_name']); ?></td>
-                                <td><?php echo date('M j, Y g:i A', strtotime($case['created_at'])); ?></td>
+                                <td>
+                                    <?php 
+                                    $timezone = new DateTimeZone('Asia/Manila');
+                                    $date = new DateTime($case['created_at'], new DateTimeZone('UTC'));
+                                    $date->setTimeZone($timezone);
+                                    echo $date->format('M j, Y g:i A'); 
+                                    ?>
+                                </td>
                                 <td>
                                     <?php
                                     if ($case['status'] === 'resolved' && $case['resolved_at']) {

@@ -2,10 +2,10 @@
 session_start();
 
 // Database configuration
-define('DB_HOST', 'localhost');
-define('DB_NAME', 'child_tracking_system');
-define('DB_USER', 'root');
-define('DB_PASS', '');
+define('DB_HOST', 'sql209.byethost15.com');
+define('DB_NAME', 'b15_40263673_child_tracking_system');
+define('DB_USER', 'b15_40263673');
+define('DB_PASS', 'ces@2025');
 
 // Application settings
 define('SITE_URL', 'http://localhost/child_tracking');

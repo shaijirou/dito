@@ -16,9 +16,7 @@ try {
                               WHERE tc.teacher_id = ? AND c.status = 'active'");
         $stmt->execute([$_SESSION['user_id']]);
         $stats['total_children'] = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
-    }
-    
-    else {
+    } else {
         // For parents, count only their children
         $stmt = $pdo->prepare("SELECT COUNT(*) as total FROM children c 
                               JOIN parent_child pc ON c.id = pc.child_id 
@@ -28,8 +26,15 @@ try {
     }
     
     // Active cases
-    if ($_SESSION['role'] === 'admin' || $_SESSION['role'] === 'teacher') {
+    if ($_SESSION['role'] === 'admin') {
         $stmt = $pdo->query("SELECT COUNT(*) as total FROM missing_cases WHERE status = 'active'");
+        $stats['active_cases'] = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
+    } elseif ($_SESSION['role'] === 'teacher') {
+        $stmt = $pdo->prepare("SELECT COUNT(*) as total FROM missing_cases mc 
+                              JOIN children c ON mc.child_id = c.id 
+                              JOIN teacher_child tc ON c.id = tc.child_id 
+                              WHERE tc.teacher_id = ? AND mc.status = 'active'");
+        $stmt->execute([$_SESSION['user_id']]);
         $stats['active_cases'] = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
     } else {
         $stmt = $pdo->prepare("SELECT COUNT(*) as total FROM missing_cases mc 
@@ -41,8 +46,15 @@ try {
     }
     
     // Recent alerts
-    if ($_SESSION['role'] === 'admin' || $_SESSION['role'] === 'teacher') {
+    if ($_SESSION['role'] === 'admin') {
         $stmt = $pdo->query("SELECT COUNT(*) as total FROM alerts WHERE created_at >= DATE_SUB(NOW(), INTERVAL 24 HOUR)");
+        $stats['recent_alerts'] = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
+    } elseif ($_SESSION['role'] === 'teacher') {
+        $stmt = $pdo->prepare("SELECT COUNT(*) as total FROM alerts a 
+                              JOIN children c ON a.child_id = c.id 
+                              JOIN teacher_child tc ON c.id = tc.child_id 
+                              WHERE tc.teacher_id = ? AND a.created_at >= DATE_SUB(NOW(), INTERVAL 24 HOUR)");
+        $stmt->execute([$_SESSION['user_id']]);
         $stats['recent_alerts'] = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
     } else {
         $stmt = $pdo->prepare("SELECT COUNT(*) as total FROM alerts a 
@@ -54,11 +66,19 @@ try {
     }
     
     // Get recent activities
-    if ($_SESSION['role'] === 'admin' || $_SESSION['role'] === 'teacher') {
+    if ($_SESSION['role'] === 'admin') {
         $stmt = $pdo->query("SELECT mc.case_number, c.first_name, c.last_name, mc.status, mc.priority, mc.created_at 
                             FROM missing_cases mc 
                             JOIN children c ON mc.child_id = c.id 
                             ORDER BY mc.created_at DESC LIMIT 5");
+    } elseif ($_SESSION['role'] === 'teacher') {
+        $stmt = $pdo->prepare("SELECT mc.case_number, c.first_name, c.last_name, mc.status, mc.priority, mc.created_at 
+                              FROM missing_cases mc 
+                              JOIN children c ON mc.child_id = c.id 
+                              JOIN teacher_child tc ON c.id = tc.child_id 
+                              WHERE tc.teacher_id = ? 
+                              ORDER BY mc.created_at DESC LIMIT 5");
+        $stmt->execute([$_SESSION['user_id']]);
     } else {
         $stmt = $pdo->prepare("SELECT mc.case_number, c.first_name, c.last_name, mc.status, mc.priority, mc.created_at 
                               FROM missing_cases mc 
@@ -189,7 +209,14 @@ try {
                                         <?php echo ucfirst($case['priority']); ?>
                                     </span>
                                 </td>
-                                <td><?php echo date('M j, Y g:i A', strtotime($case['created_at'])); ?></td>
+                                <td>
+                                    <?php 
+                                    $timezone = new DateTimeZone('Asia/Manila');
+                                    $date = new DateTime($case['created_at'], new DateTimeZone('UTC'));
+                                    $date->setTimeZone($timezone);
+                                    echo $date->format('M j, Y g:i A'); 
+                                    ?>
+                                </td>
                                 <td>
                                     <a href="case_details.php?case=<?php echo $case['case_number']; ?>" class="btn btn-sm btn-primary">View</a>
                                 </td>

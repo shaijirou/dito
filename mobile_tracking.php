@@ -33,10 +33,10 @@ if ($lrn) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mobile GPS Tracker</title>
     <link rel="stylesheet" href="assets/css/main.css">
-     <link rel="stylesheet" href="assets/css/tracker.css">
+    <link rel="stylesheet" href="assets/css/tracker.css">
 </head>
 <body>
-     <div class="tracker-container">
+    <div class="tracker-container">
         <div class="card">
             <div class="card-header">
                 <h1>📱 Mobile GPS Tracker</h1>
@@ -45,8 +45,6 @@ if ($lrn) {
                     <p>LRN: <?php echo htmlspecialchars($child['lrn']); ?></p>
                 <?php endif; ?>
             </div>
-
-            
 
             <?php if (!$lrn): ?>
                 <div class="alert alert-warning">
@@ -60,13 +58,10 @@ if ($lrn) {
                     <input type="text" id="manual_lrn" class="form-control" placeholder="Enter LRN">
                     <button onclick="setDeviceId()" class="btn btn-primary big-button mt-2">Set LRN</button>
 
-
                     <div class="text-center mt-3">
                         <p>Log In your Account <a href="login.php">Log In</a></p>
-                        
                     </div>
                 </div>
-
             <?php elseif ($child): ?>
                 <div class="location-info">
                     <div class="d-flex align-center mb-2">
@@ -121,7 +116,6 @@ if ($lrn) {
             <?php endif; ?>
         </div>
     </div>
-    
 
     <script>
         let trackingInterval = null;
@@ -130,7 +124,7 @@ if ($lrn) {
         
         function log(message) {
             const logContainer = document.getElementById('activity-log');
-            const timestamp = new Date().toLocaleTimeString();
+            const timestamp = new Date().toLocaleString('en-PH', { timeZone: 'Asia/Manila' });
             logContainer.innerHTML += `<p>[${timestamp}] ${message}</p>`;
             logContainer.scrollTop = logContainer.scrollHeight;
         }
@@ -147,7 +141,7 @@ if ($lrn) {
             document.getElementById('current-lat').textContent = position.coords.latitude.toFixed(6);
             document.getElementById('current-lng').textContent = position.coords.longitude.toFixed(6);
             document.getElementById('current-accuracy').textContent = position.coords.accuracy.toFixed(1) + 'm';
-            document.getElementById('last-update').textContent = new Date().toLocaleString();
+            document.getElementById('last-update').textContent = new Date().toLocaleString('en-PH', { timeZone: 'Asia/Manila' });
         }
         
         function sendLocationToServer(position) {
@@ -183,7 +177,7 @@ if ($lrn) {
             });
         }
         
-       function startTracking() {
+        function startTracking() {
             if (!navigator.geolocation) {
                 alert('Geolocation is not supported by this browser.');
                 return;
@@ -233,10 +227,10 @@ if ($lrn) {
             log('✅ Tracking started with ' + (interval/1000) + 's intervals');
         }
 
-         function stopTracking() {
+        function stopTracking() {
             if (watchId !== null) {
-            navigator.geolocation.clearWatch(watchId);
-            watchId = null;
+                navigator.geolocation.clearWatch(watchId);
+                watchId = null;
             }
             clearInterval(trackingInterval);
             trackingInterval = null;
@@ -246,7 +240,6 @@ if ($lrn) {
             log('⏹️ Tracking stopped');
         }
 
-        
         function sendLocationOnce() {
             if (!navigator.geolocation) {
                 alert('Geolocation is not supported by this browser.');

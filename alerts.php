@@ -4,18 +4,27 @@ requireLogin();
 
 $error = '';
 $success = '';
-
+date_default_timezone_set('Asia/Manila'); // ensure PHP uses Manila TZ
 // Get alerts based on user role
 try {
-    if ($_SESSION['role'] === 'admin' || $_SESSION['role'] === 'teacher') {
+    if ($_SESSION['role'] === 'admin') {
         $stmt = $pdo->query("SELECT a.*, c.first_name, c.last_name, c.lrn, mc.case_number
                             FROM alerts a 
                             JOIN children c ON a.child_id = c.id 
                             LEFT JOIN missing_cases mc ON a.case_id = mc.id
                             ORDER BY a.created_at DESC 
                             LIMIT 100");
+    } elseif ($_SESSION['role'] === 'teacher') {
+        $stmt = $pdo->prepare("SELECT a.*, c.first_name, c.last_name, c.lrn, mc.case_number
+                              FROM alerts a 
+                              JOIN children c ON a.child_id = c.id 
+                              JOIN teacher_child tc ON c.id = tc.child_id
+                              LEFT JOIN missing_cases mc ON a.case_id = mc.id
+                              WHERE tc.teacher_id = ?
+                              ORDER BY a.created_at DESC 
+                              LIMIT 100");
+        $stmt->execute([$_SESSION['user_id']]);
     } else {
-        // Parents see only alerts for their children
         $stmt = $pdo->prepare("SELECT a.*, c.first_name, c.last_name, c.lrn, mc.case_number
                               FROM alerts a 
                               JOIN children c ON a.child_id = c.id 

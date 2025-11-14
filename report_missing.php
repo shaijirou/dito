@@ -36,6 +36,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $description = sanitizeInput($_POST['description']);
     $last_seen_location = sanitizeInput($_POST['last_seen_location']);
     $last_seen_time = sanitizeInput($_POST['last_seen_time']);
+    $reported_at = date('Y-m-d H:i:s');
     
     // Validation
     if (empty($child_id) || empty($priority) || empty($description)) {
@@ -70,13 +71,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     $case_number = generateCaseNumber();
                     
                     // Insert missing case
-                    $stmt = $pdo->prepare("INSERT INTO missing_cases (case_number, child_id, reported_by, priority, description, last_seen_location, last_seen_time) VALUES (?, ?, ?, ?, ?, ?, ?)");
+                    $stmt = $pdo->prepare("INSERT INTO missing_cases (case_number, child_id, reported_by, priority, description, last_seen_location, last_seen_time, created_at) VALUES (?, ?, ?, ?, ?, ?, ?,?)");
                     
-                    if ($stmt->execute([$case_number, $child_id, $_SESSION['user_id'], $priority, $description, $last_seen_location, $last_seen_time])) {
+                    if ($stmt->execute([$case_number, $child_id, $_SESSION['user_id'], $priority, $description, $last_seen_location, $last_seen_time, $reported_at])) {
                         $case_id = $pdo->lastInsertId();
                         
                         // Create alert message
-                        $alert_message = "MISSING CHILD ALERT: " . $child['first_name'] . " " . $child['last_name'] . " has been reported missing. Case: " . $case_number;
+                        $alert_message = "MISSING CHILD ALERT: " . $child['first_name'] . " " . $child['last_name'] . " has been reported missing. Case: " . $case_number . ". Please Wait for further instructions". date('M d, Y h:i A') ;
                         
                         $stmt = $pdo->prepare("SELECT u.id, u.phone, u.full_name FROM users u 
                                               JOIN parent_child pc ON u.id = pc.parent_id 
@@ -169,7 +170,107 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         .btn-lg i {
             margin-right: 5px;
         }
+       .suggestions-list div {
+    padding: 8px 12px;
+    cursor: pointer;
+}
+.suggestions-list div:hover, .suggestions-list .highlighted {
+    background-color: #e9ecef;
+}
+
     </style>
+    <script>
+document.addEventListener('DOMContentLoaded', function() {
+    const children = [
+        <?php foreach ($children as $child): ?>
+        {
+            id: '<?php echo $child['id']; ?>', 
+            name: '<?php echo htmlspecialchars($child['first_name'].' '.$child['last_name'].' ('.$child['lrn'].') - '.$child['grade']); ?>'
+        },
+        <?php endforeach; ?>
+    ];
+
+    const input = document.getElementById('child_search');
+    const suggestionsContainer = document.getElementById('child_suggestions');
+    const hiddenId = document.getElementById('child_id');
+
+    let currentFocus = -1;
+
+    input.addEventListener('input', function() {
+        const val = this.value.toLowerCase();
+        suggestionsContainer.innerHTML = '';
+        currentFocus = -1;
+
+        if (!val) {
+            suggestionsContainer.style.display = 'none';
+            hiddenId.value = '';
+            return;
+        }
+
+        const matches = children.filter(c => c.name.toLowerCase().includes(val));
+        if (matches.length === 0) {
+            suggestionsContainer.style.display = 'none';
+            hiddenId.value = '';
+            return;
+        }
+
+        matches.forEach(child => {
+            const div = document.createElement('div');
+            div.textContent = child.name;
+            div.dataset.id = child.id;
+            div.addEventListener('click', function() {
+                input.value = this.textContent;
+                hiddenId.value = this.dataset.id;
+                suggestionsContainer.innerHTML = '';
+                suggestionsContainer.style.display = 'none';
+            });
+            suggestionsContainer.appendChild(div);
+        });
+
+        suggestionsContainer.style.display = 'block';
+    });
+
+    // Keyboard navigation in suggestions (up/down/enter)
+    input.addEventListener('keydown', function(e) {
+        let items = suggestionsContainer.getElementsByTagName('div');
+        if (items.length === 0) return;
+
+        if (e.key === 'ArrowDown') {
+            currentFocus++;
+            if (currentFocus >= items.length) currentFocus = 0;
+            addActive(items);
+            e.preventDefault();
+        } else if (e.key === 'ArrowUp') {
+            currentFocus--;
+            if (currentFocus < 0) currentFocus = items.length -1;
+            addActive(items);
+            e.preventDefault();
+        } else if (e.key === 'Enter') {
+            e.preventDefault();
+            if (currentFocus > -1) {
+                items[currentFocus].click();
+            }
+        }
+    });
+
+    function addActive(items) {
+        for (let i=0; i<items.length; i++) {
+            items[i].classList.remove('highlighted');
+        }
+        if (currentFocus >= 0 && currentFocus < items.length) {
+            items[currentFocus].classList.add('highlighted');
+        }
+    }
+
+    // Close suggestions when clicking outside
+    document.addEventListener('click', function(e) {
+        if (e.target !== input) {
+            suggestionsContainer.style.display = 'none';
+        }
+    });
+});
+</script>
+
 </head>
 <body>
     <?php include 'includes/header.php'; ?>
@@ -202,7 +303,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         <div class="card">
             <div class="card-header">
                 <h5 class="mb-0"><i class="fas fa-file-alt me-2"></i>Missing Child Report Form</h5>
-                <small class="text-muted">Please provide complete details to help locate the child quickly</small>
+                <small  style="color: white;">Please provide complete details to help locate the child quickly</small>
             </div>
 
             <div class="card-body">
@@ -210,16 +311,21 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     <!-- Child Information -->
                     <h6 class="form-section-title mt-3">Child Information</h6>
                     <div class="mb-3">
-                        <label for="child_id" class="form-label">Select Child <span class="text-danger">*</span></label>
-                        <select id="child_id" name="child_id" class="form-select" required>
-                            <option value="">Choose a child...</option>
-                            <?php foreach ($children as $child): ?>
-                                <option value="<?php echo $child['id']; ?>" 
-                                    <?php echo (isset($_POST['child_id']) && $_POST['child_id'] == $child['id']) ? 'selected' : ''; ?>>
-                                    <?php echo htmlspecialchars($child['first_name'].' '.$child['last_name'].' ('.$child['lrn'].') - '.$child['grade']); ?>
-                                </option>
-                            <?php endforeach; ?>
-                        </select>
+                        <label for="child_search" class="form-label">Select Child <span class="text-danger">*</span></label>
+                        <input 
+                            type="text" 
+                            id="child_search" 
+                            name="child_search" 
+                            class="form-control" 
+                            placeholder="Search for a child..." 
+                            autocomplete="off"
+                            required
+                        />
+
+                        <input type="hidden" id="child_id" name="child_id" value="<?php echo isset($_POST['child_id']) ? htmlspecialchars($_POST['child_id']) : ''; ?>" />
+
+                        <div id="child_suggestions" class="suggestions-list" style="border: 1px solid #ced4da; max-height: 150px; overflow-y: auto; display: none; position: absolute; background: white; width: 100%; z-index: 1000;"></div>
+
                     </div>
 
                     <!-- Report Details -->

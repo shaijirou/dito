@@ -27,6 +27,7 @@ $lrn = sanitizeInput($input['lrn']);
 $latitude = (float)$input['latitude'];
 $longitude = (float)$input['longitude'];
 $accuracy = isset($input['accuracy']) ? (float)$input['accuracy'] : null;
+$timestamp = date('Y-m-d H:i:s');
 
 try {
     // Get active child record
@@ -58,8 +59,8 @@ try {
     }
 
     // Save new location record
-    $stmt = $pdo->prepare("INSERT INTO location_tracking (child_id, latitude, longitude, accuracy, inside_geofence) VALUES (?, ?, ?, ?, ?)");
-    $stmt->execute([$child_id, $latitude, $longitude, $accuracy, $inside_geofence]);
+    $stmt = $pdo->prepare("INSERT INTO location_tracking (child_id, latitude, longitude, accuracy, inside_geofence, timestamp) VALUES (?, ?, ?, ?, ?, ?)");
+    $stmt->execute([$child_id, $latitude, $longitude, $accuracy, $inside_geofence, $timestamp]);
     error_log("[GEOFENCE] Location record inserted");
 
     // === TIME & DAY FILTER ===
@@ -67,25 +68,25 @@ try {
     $current_hour = (int)$current_time->format('H');
     $current_minute = (int)$current_time->format('i');
     $day_of_week = (int)$current_time->format('N'); // 1=Mon, 7=Sun
-
+	
     $current_time_minutes = $current_hour * 60 + $current_minute;
     $seven_am_minutes = 7 * 60;
-    $five_pm_minutes = 17 * 60;
+    $ten_pm_minutes = 22 * 60;  // 10:00 PM in minutes (22 hours * 60 minutes)
+
     $is_weekday = $day_of_week >= 1 && $day_of_week <= 5;
-    $is_school_hours = $is_weekday && ($current_time_minutes >= $seven_am_minutes && $current_time_minutes < $five_pm_minutes);
+    $is_school_hours = $is_weekday && ($current_time_minutes >= $seven_am_minutes && $current_time_minutes < $ten_pm_minutes);
 
     error_log("[GEOFENCE] Time check: " . $current_time->format('D H:i:s') . " | School hours: " . ($is_school_hours ? 'YES' : 'NO'));
 
-    // Alert if outside geofence and during school hours (with 1-hour cooldown to prevent spam)
+    // Alert if outside geofence and during school hours (with 15-minute cooldown to prevent spam)
     if (!$inside_geofence && $is_school_hours) {
-        // Check for recent alert within the last hour
-        $one_hour_ago = date('Y-m-d H:i:s', strtotime('-1 hour'));
+        $fifteen_mins_ago = date('Y-m-d H:i:s', strtotime('-15 minutes'));
         $stmt = $pdo->prepare("SELECT id FROM alerts WHERE child_id = ? AND alert_type = 'geofence_exit' AND created_at > ?");
-        $stmt->execute([$child_id, $one_hour_ago]);
+        $stmt->execute([$child_id, $fifteen_mins_ago]);
         $recent_alert = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if ($recent_alert) {
-            error_log("[GEOFENCE] Recent alert exists within last hour. Skipping.");
+            error_log("[GEOFENCE] Recent alert exists within last 15 minutes. Skipping.");
             echo json_encode([
                 'success' => true,
                 'message' => 'Location updated (alert skipped due to recent alert)',
@@ -98,18 +99,10 @@ try {
         $stmt = $pdo->prepare("SELECT first_name, last_name FROM children WHERE id = ?");
         $stmt->execute([$child_id]);
         $child_info = $stmt->fetch(PDO::FETCH_ASSOC);
-       date_default_timezone_set('Asia/Manila');
+        date_default_timezone_set('Asia/Manila');
         $alert_message = "GEOFENCE ALERT: {$child_info['first_name']} {$child_info['last_name']} has left the school safe zone at " . date('M d, Y h:i A') . ". The teacher are advised to check on the child immediately. Wait for further instructions.";
 
-
         $recipients = [];
-        $stmt = $pdo->prepare("SELECT u.id, u.phone, u.full_name FROM users u 
-            JOIN parent_child pc ON u.id = pc.parent_id 
-            WHERE pc.child_id = ? AND u.status = 'active'");
-        $stmt->execute([$child_id]);
-        $parents = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        $recipients = array_merge($recipients, $parents);
-
         $stmt = $pdo->prepare("SELECT u.id, u.phone, u.full_name FROM users u 
             JOIN teacher_child tc ON u.id = tc.teacher_id 
             WHERE tc.child_id = ? AND u.status = 'active'");
@@ -117,18 +110,19 @@ try {
         $teachers = $stmt->fetchAll(PDO::FETCH_ASSOC);
         $recipients = array_merge($recipients, $teachers);
 
-        // Get admins
-        $stmt = $pdo->query("SELECT id, phone, full_name FROM users WHERE role = 'admin' AND status = 'active'");
-        $admins = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        $recipients = array_merge($recipients, $admins);
+        $stmt = $pdo->prepare("SELECT u.id, u.phone, u.full_name FROM users u 
+            JOIN parent_child pc ON u.id = pc.parent_id 
+            WHERE pc.child_id = ? AND u.status = 'active'");
+        $stmt->execute([$child_id]);
+        $parents = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $recipients = array_merge($recipients, $parents);
 
         $recipient_ids = array_column($recipients, 'id');
-        error_log("[GEOFENCE] Total recipients: " . count($recipient_ids));
-
-        // Insert alert
-        $stmt = $pdo->prepare("INSERT INTO alerts (child_id, alert_type, message, severity, sent_to, status) VALUES (?, 'geofence_exit', ?, 'warning', ?, 'sent')");
-        $stmt->execute([$child_id, $alert_message, json_encode($recipient_ids)]);
-        error_log("[GEOFENCE] Alert record created successfully");
+        error_log("[GEOFENCE] Total recipients (teachers + parents only): " . count($recipient_ids));
+        
+        $stmt = $pdo->prepare("INSERT INTO alerts (child_id, alert_type, message, severity, sent_to, status, created_at) VALUES (?, 'geofence_exit', ?, 'warning', ?, 'sent', ?)");
+        $stmt->execute([$child_id, $alert_message, json_encode($recipient_ids), $timestamp]);
+        error_log("[GEOFENCE] Alert record created successfully with timestamp: $timestamp");
 
         $sms_count = 0;
         foreach ($recipients as $r) {
@@ -150,7 +144,6 @@ try {
             'sms_sent_count' => $sms_count
         ]);
     } else {
-        // No alert needed
         $reason = !$inside_geofence ? 'outside geofence but not school hours' : 'inside geofence';
         error_log("[GEOFENCE] No alert - $reason");
         echo json_encode([

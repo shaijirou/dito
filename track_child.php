@@ -60,6 +60,20 @@ if ($child_id) {
     <title>Track Child - Child Tracking System</title>
     <link rel="stylesheet" href="assets/css/main.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <style>
+        /* Add explicit map styling to ensure it displays properly */
+        #map {
+            width: 100%;
+            height: 500px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .leaflet-container {
+            background: #e1e5e9;
+            outline: 0;
+        }
+    </style>
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
 </head>
 <body>
@@ -81,84 +95,80 @@ if ($child_id) {
                     </div>
                 </div>
                 
-                <!-- Enhanced child info card with better styling -->
-                <div class="card mb-3 child-card">
-                    <div class="child-profile">
-                        
-
-                        <div class="child-info">
-                            <h2 class="child-name">
-                                <?php echo htmlspecialchars($child['first_name'] . ' ' . $child['last_name']); ?>
-                            </h2>
-                            <div class="info-grid">
-                                <div class="info-item">
-                                    <span class="info-label">LRN</span>
-                                    <span class="info-value"><?php echo htmlspecialchars($child['lrn']); ?></span>
-                                </div>
-                                <div class="info-item">
-                                    <span class="info-label">Grade</span>
-                                    <span class="info-value"><?php echo htmlspecialchars($child['grade']); ?></span>
-                                </div>
-                                <div class="info-item">
-                                    <span class="info-label">Device Status</span>
-                                    <span class="info-value">
-                                        <?php if ($child['lrn']): ?>
-                                            <span class="badge badge-success">Connected</span>
-                                        <?php else: ?>
-                                            <span class="badge badge-warning">No Device</span>
-                                        <?php endif; ?>
-                                    </span>
-                                </div>
-                                <div class="info-item">
-                                    <span class="info-label">Last Update</span>
-                                    <span class="info-value">
-                                        <?php if ($current_location): ?>
-                                            <?php echo date('M j, Y g:i A', strtotime($current_location['timestamp'])); ?>
-                                        <?php else: ?>
-                                            No location data
-                                        <?php endif; ?>
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Enhanced current location card -->
-                <?php if ($current_location): ?>
-                <div class="card mb-3 location-card">
-                    <div class="card-header">
-                        <h2 class="card-title">Current Location</h2>
-                    </div>
-                    <div class="info-grid">
-                        <div class="info-item">
-                            <span class="info-label">Coordinates</span>
-                            <span class="info-value"><?php echo $current_location['latitude']; ?>, <?php echo $current_location['longitude']; ?></span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Accuracy</span>
-                            <span class="info-value"><?php echo $current_location['accuracy']; ?>m</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Safe Zone Status</span>
-                            <span class="info-value">
-                                <?php if ($current_location['inside_geofence']): ?>
-                                    <span class="badge badge-success">Inside Safe Zone</span>
-                                <?php else: ?>
-                                    <span class="badge badge-danger">Outside Safe Zone</span>
-                                <?php endif; ?>
-                            </span>
-                        </div>
-                    </div>
-                </div>
+                <!-- Child info card -->
+<div class="card mb-3 child-card shadow-sm" style="border-radius: 12px; padding: 16px; background: #fff;">
+    <div class="child-info">
+        <h2 class="child-name mb-2" style="font-weight: 600; color: #333;">
+            <?php echo htmlspecialchars($child['first_name'] . ' ' . $child['last_name']); ?>
+        </h2>
+        <div class="info-item mb-1">
+            <span class="info-label" style="color: #000;">LRN</span> 
+            <span class="info-value" style="margin-left: 8px;"><?php echo htmlspecialchars($child['lrn']); ?></span>
+        </div>
+        <div class="info-item mb-1">
+            <span class="info-label" style="color: #000;">Grade</span> 
+            <span class="info-value" style="margin-left: 8px;"><?php echo htmlspecialchars($child['grade']); ?></span>
+        </div>
+        <div class="info-item mb-1">
+            <span class="info-label" style="color: #000;">Device Status</span> 
+            <span class="info-value" style="margin-left: 8px;">
+                <?php if ($child['lrn']): ?>
+                    <span class="badge badge-pill" style="background-color: #9ae6b4; color: #276749; font-size: 0.8rem; padding: 0.25rem 0.75rem;">Connected</span>
+                <?php else: ?>
+                    <span class="badge badge-pill" style="background-color: #fbd5d5; color: #742a2a; font-size: 0.8rem; padding: 0.25rem 0.75rem;">No Device</span>
                 <?php endif; ?>
+            </span>
+        </div>
+        <div class="info-item mb-0">
+            <span class="info-label" style="color: #000;">Last Update</span> 
+            <span class="info-value" style="margin-left: 8px;">
+                <?php if ($current_location): ?>
+                    <?php echo date('M j, Y g:i A', strtotime($current_location['timestamp'])); ?>
+                <?php else: ?>
+                    No location data
+                <?php endif; ?>
+            </span>
+        </div>
+    </div>
+</div>
+
+<!-- Current location card -->
+<?php if ($current_location): ?>
+<div class="card mb-3 location-card" style="border-radius: 12px;">
+    <div class="card-header" style="background-color: #4a4a4a; color: white; border-top-left-radius: 12px; border-top-right-radius: 12px; font-weight: 600; padding: 12px 16px;">
+        Current Location
+    </div>
+    <div class="card-body" style="background: white; border-bottom-left-radius: 12px; border-bottom-right-radius: 12px; padding: 12px 16px;">
+        <div class="info-item mb-1">
+            <span class="info-label" style="color: #000;">Coordinates</span> 
+            <span class="info-value" style="margin-left: 8px;"><?php echo $current_location['latitude']; ?>, <?php echo $current_location['longitude']; ?></span>
+        </div>
+        <div class="info-item mb-1">
+            <span class="info-label" style="color: #000;">Accuracy</span> 
+            <span class="info-value" style="margin-left: 8px;"><?php echo $current_location['accuracy']; ?>m</span>
+        </div>
+        <div class="info-item mb-0">
+            <span class="info-label" style="color: #000;">Safe Zone Status</span> 
+            <span class="info-value" style="margin-left: 8px;">
+                <?php if ($current_location['inside_geofence']): ?>
+                    <span class="badge badge-pill" style="background-color: #fed7d7; color: #742a2a; font-size: 0.8rem; padding: 0.25rem 0.75rem; background-color: #fbb6b6; color: #742a2a;">Inside Safe Zone</span>
+                <?php else: ?>
+                    <span class="badge badge-pill" style="background-color: #fbb6b6; color: #742a2a; font-size: 0.8rem; padding: 0.25rem 0.75rem;">Outside Safe Zone</span>
+                <?php endif; ?>
+            </span>
+        </div>
+    </div>
+</div>
+<?php endif; ?>
+
 
                 <!-- Enhanced map card -->
                 <div class="card mb-3">
                     <div class="card-header">
                         <h2 class="card-title">Location Map</h2>
                     </div>
-                    <div id="map" class="map-container"></div>
+                    <!-- Use direct id="map" instead of class for more reliable styling and initialization -->
+                    <div id="map"></div>
                 </div>
                 
                 <!-- Enhanced location history table with better mobile responsiveness -->
@@ -212,8 +222,8 @@ if ($child_id) {
                 // Initialize map with current location
                 map = L.map('map').setView([<?php echo $current_location['latitude']; ?>, <?php echo $current_location['longitude']; ?>], 15);
             <?php else: ?>
-                // Default location (school coordinates - you should set this to your school's location)
-                map = L.map('map').setView([13.8893665, 120.9781897], 16); // Manila coordinates as example
+                // Default location (Manila coordinates)
+                map = L.map('map').setView([13.8893665, 120.9781897], 16);
             <?php endif; ?>
             
             // Add tile layer
@@ -239,7 +249,7 @@ if ($child_id) {
                     const marker = L.marker([lat, lng]).addTo(map);
                     marker.bindPopup(`
                         <strong>${index === 0 ? 'Current Location' : 'Location History'}</strong><br>
-                        Time: ${new Date(location.timestamp).toLocaleString()}<br>
+                        Time: ${new Date(location.timestamp).toLocaleString('en-PH', {timeZone: 'Asia/Manila'})}<br>
                         Accuracy: ${location.accuracy}m<br>
                         Safe Zone: ${location.inside_geofence ? 'Inside' : 'Outside'}
                     `);
@@ -253,6 +263,10 @@ if ($child_id) {
                     L.polyline(pathCoords, {color: 'blue', weight: 3, opacity: 0.7}).addTo(map);
                 }
             <?php endif; ?>
+            
+            setTimeout(function() {
+                map.invalidateSize();
+            }, 100);
         }
         
         function refreshLocation() {
@@ -261,9 +275,13 @@ if ($child_id) {
         }
         
         // Initialize map when page loads
-        document.addEventListener('DOMContentLoaded', function() {
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', function() {
+                initMap();
+            });
+        } else {
             initMap();
-        });
+        }
     </script>
 </body>
 </html>
